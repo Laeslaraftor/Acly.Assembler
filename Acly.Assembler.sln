@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.35931.197 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acly.Assembler", "Acly.Assembler\Acly.Assembler.csproj", "{40DBB7C0-0F32-4301-B09B-72D6FAAF82E1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acly.AssemblerTests", "Acly.AssemblerTests\Acly.AssemblerTests.csproj", "{6F562354-092A-4515-90DC-DD245D28841E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{40DBB7C0-0F32-4301-B09B-72D6FAAF82E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40DBB7C0-0F32-4301-B09B-72D6FAAF82E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40DBB7C0-0F32-4301-B09B-72D6FAAF82E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F562354-092A-4515-90DC-DD245D28841E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F562354-092A-4515-90DC-DD245D28841E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F562354-092A-4515-90DC-DD245D28841E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F562354-092A-4515-90DC-DD245D28841E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
