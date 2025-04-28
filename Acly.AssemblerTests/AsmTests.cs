@@ -1,6 +1,7 @@
 ﻿using Acly.Assembler.Contexts;
 using Acly.Assembler.Registers;
 using System.Diagnostics;
+using Acly.Assembler.Interruptions;
 
 namespace Acly.Assembler.Tests
 {
@@ -10,8 +11,8 @@ namespace Acly.Assembler.Tests
         [TestMethod()]
         public void SwitchTest()
         {
-            var buffer = Asm.CreateArrayVariable("buffer", Size.x16, false);
-            buffer.Length = 20;
+            Asm.CreateVariable("TestVariable", Size.x64);
+            AsmSettings.UpperCaseRegisters = false;
 
             Asm.StartWithMode(Mode.x64);
 
@@ -20,43 +21,40 @@ namespace Acly.Assembler.Tests
             Asm.Comment("R9 = R8");
             Asm.Context.R9.Set(Asm.Context.R8);
             Asm.EmptyLine();
-
-            Asm.Comment("R8 << R9 должно быть: (10 << 10)");
+            Asm.Comment("R8 << R9 должно быть: (10 << 10) = 10240");
             Asm.Context.R8.ShiftLeft(Asm.Context.R9);
 
             Asm.EmptyLine();
-            Asm.Comment("Вызов функции для отображения числа из R8");
-            Asm.Call("print");
+            Asm.Comment("Подготовка к преобразованию числа в строку");
 
-            Asm.Label("print");
             Asm.Context.Accumulator.Set(Asm.Context.R8);
-            Asm.Context.Data.LoadEffectiveAddress(MemoryOperand.Create(buffer, displacement: 19));
-            Asm.Context.Data.Set(Prefix.Byte, true, 10);
-            Asm.Context.Data.Decrement();
-            Asm.Context.Count.Set(10);
+            Asm.Context.R9.Set(10);
+            Asm.Context.Count.Set(Asm.Context.StackPointer);
+            Asm.Context.StackPointer.Decrement();
+            Asm.Context.StackPointer.Set(Prefix.Byte, true, 0);
 
-            Asm.Label("convert_loop");
+            Asm.Label("L1");
             Asm.Context.Data.Xor(Asm.Context.Data);
-            Asm.Context.Count.Divide();
-            RealModeContext.Instance.Data.Lower?.Add('0');
-            Asm.Context.Data.Decrement();
+            Asm.Context.R9.Divide();
+            RealModeContext.Instance.Data.Lower.Add('0');
+            Asm.Context.StackPointer.Decrement();
+            Asm.Context.StackPointer.Set(null, true, RealModeContext.Instance.Data.Lower);
             Asm.Context.Accumulator.EqualsZero();
-            Asm.JumpIfNotEquals("convert_loop");
+            Asm.JumpIfNotEquals("L1");
 
             Asm.EmptyLine();
 
-            Asm.Context.Data.Increment();
-            LongModeContext.Instance.SourceIndex.LoadEffectiveAddress(MemoryOperand.Create(Asm.Context.Accumulator, true));
-            Asm.Context.Data.Set(MemoryOperand.Create(buffer, 20));
-            Asm.Context.Data.Subtract(LongModeContext.Instance.SourceIndex);
             Asm.Context.Accumulator.Set(1);
-            Asm.Context.Data.Set(1);
+            Asm.Context.DestinationIndex.Set(1);
+            Asm.Context.SourceIndex.Set(Asm.Context.StackPointer);
+            Asm.Context.Data.Set(Asm.Context.Count);
+            Asm.Context.Data.Subtract(Asm.Context.StackPointer);
             Asm.SystemCall();
 
             Asm.EmptyLine();
 
             Asm.Context.Accumulator.Set(60);
-            Asm.Context.Data.Xor(Asm.Context.Data);
+            Asm.Context.DestinationIndex.Xor(Asm.Context.DestinationIndex);
             Asm.SystemCall();
 
             Debug.WriteLine(Asm.GetAssembly());

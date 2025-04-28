@@ -34,14 +34,18 @@ namespace Acly.Assembler.Registers
             _lowerGetter = lowerGetter;
         }
 
+#nullable disable
+
         /// <summary>
         /// Старший регистр
         /// </summary>
-        public GeneralRegister? Higher => _higherGetter?.Invoke();
+        public GeneralRegister Higher => _higherGetter?.Invoke();
         /// <summary>
         /// Младший регистр
         /// </summary>
-        public GeneralRegister? Lower => _lowerGetter?.Invoke();
+        public GeneralRegister Lower => _lowerGetter?.Invoke();
+
+#nullable enable
 
         private readonly Func<GeneralRegister?>? _higherGetter;
         private readonly Func<GeneralRegister?>? _lowerGetter;

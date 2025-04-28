@@ -64,6 +64,17 @@ namespace Acly.Assembler.Contexts
         /// </summary>
         public abstract GeneralRegister R15 { get; }
 
+        /// <summary>
+        /// RSI, ESI, SI. Используется как источник данных в строковых операциях. 
+        /// Может использоваться для передачи параметров функциям.
+        /// </summary>
+        public abstract GeneralRegister SourceIndex { get; }
+        /// <summary>
+        /// RDI, EDI, DI. Используется как приемник данных в строковых операциях.
+        /// Также часто используется для передачи параметров функциям.
+        /// </summary>
+        public abstract GeneralRegister DestinationIndex { get; } 
+
         #endregion
 
         #region Сегменты

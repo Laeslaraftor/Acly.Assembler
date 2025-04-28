@@ -149,15 +149,27 @@ namespace Acly.Assembler.Contexts
         }
 
         /// <summary>
-        /// RSI. Используется как источник данных в строковых операциях. 
-        /// Может использоваться для передачи параметров функциям.
+        /// <inheritdoc/>
         /// </summary>
-        public Register SourceIndex { get; } = new(Size.x64, "RSI");
+        public override GeneralRegister SourceIndex
+        {
+            get
+            {
+                _sourceIndex ??= new(Size.x32, "RSI", null, () => base.SourceIndex);
+                return _sourceIndex;
+            }
+        }
         /// <summary>
-        /// RDI. Используется как приемник данных в строковых операциях.
-        /// Также часто используется для передачи параметров функциям.
+        /// <inheritdoc/>
         /// </summary>
-        public Register DestinationIndex { get; } = new(Size.x64, "RDI");
+        public override GeneralRegister DestinationIndex
+        {
+            get
+            {
+                _destinationIndex ??= new(Size.x32, "RDI", null, () => base.DestinationIndex);
+                return _destinationIndex;
+            }
+        }
 
         #endregion
 
@@ -415,6 +427,8 @@ namespace Acly.Assembler.Contexts
         private GeneralRegister? _r13;
         private GeneralRegister? _r14;
         private GeneralRegister? _r15;
+        private GeneralRegister? _sourceIndex;
+        private GeneralRegister? _destinationIndex;
 
         #region Статика
 

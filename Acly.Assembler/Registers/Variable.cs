@@ -79,6 +79,11 @@ namespace Acly.Assembler.Registers
             }
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        protected override bool CanChangeCase { get; } = false;
+
         private ulong _value = 1;
         private bool _isReserved;
         private string _assemblerLine = string.Empty;

@@ -152,6 +152,31 @@ namespace Acly.Assembler.Contexts
             }
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        public override GeneralRegister SourceIndex
+        {
+            get
+            {
+                _sourceIndex ??= new(Size.x32, "ESI",
+                    () => LongModeContext.Instance.SourceIndex, () => base.SourceIndex);
+                return _sourceIndex;
+            }
+        }
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        public override GeneralRegister DestinationIndex
+        {
+            get
+            {
+                _destinationIndex ??= new(Size.x32, "EDI",
+                    () => LongModeContext.Instance.DestinationIndex, () => base.DestinationIndex);
+                return _destinationIndex;
+            }
+        }
+
         #endregion
 
         #region Управляющие регистры
@@ -409,6 +434,8 @@ namespace Acly.Assembler.Contexts
         private GeneralRegister? _r13;
         private GeneralRegister? _r14;
         private GeneralRegister? _r15;
+        private GeneralRegister? _sourceIndex;
+        private GeneralRegister? _destinationIndex;
 
         #region Статика
 

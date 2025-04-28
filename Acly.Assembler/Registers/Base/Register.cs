@@ -16,8 +16,8 @@ namespace Acly.Assembler.Registers
         /// <param name="size">Битовый размер регистра</param>
         public Register(Size size, string name)
         {
-            Name = name;
             Size = size;
+            _name = name;
         }
 
         /// <summary>
@@ -27,7 +27,25 @@ namespace Acly.Assembler.Registers
         /// <summary>
         /// Название регистра.
         /// </summary>
-        public string Name { get; }
+        public string Name
+        {
+            get
+            {
+                if (!AsmSettings.UpperCaseRegisters && CanChangeCase)
+                {
+                    return _name.ToLower();
+                }
+
+                return _name;
+            }
+        }
+
+        /// <summary>
+        /// Можно ли менять регистр названия
+        /// </summary>
+        protected virtual bool CanChangeCase { get; } = true;
+
+        private string _name;
 
         #region Основные операции
 

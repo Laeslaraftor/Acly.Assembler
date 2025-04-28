@@ -3,6 +3,7 @@ using System.Text;
 using System;
 using Acly.Assembler.Registers;
 using System.Collections.Generic;
+using Acly.Assembler.Interruptions;
 
 namespace Acly.Assembler
 {
@@ -49,19 +50,6 @@ namespace Acly.Assembler
         #region Основные оп-коды
 
         /// <summary>
-        /// Добавить комментарий
-        /// </summary>
-        /// <param name="comment">Комментарий, который будет добавлен к коду</param>
-        public static void Comment(string comment)
-        {
-            Emit($"; {comment}");
-        }
-        /// <summary>
-        /// Добавить пустую строку
-        /// </summary>
-        public static void EmptyLine() => Emit();
-
-        /// <summary>
         /// Установить элемент как глобальный
         /// </summary>
         /// <param name="label">Название элемента</param>
@@ -101,7 +89,7 @@ namespace Acly.Assembler
         }
 
         /// <summary>
-        /// Поставить оператор системного вызова. Работает только на Linux
+        /// Системный вызов (syscall). Работает только на Linux
         /// </summary>
         public static void SystemCall()
         {
@@ -139,6 +127,15 @@ namespace Acly.Assembler
         public static void Jump(string label)
         {
             Emit($"jmp {label}");
+        }
+
+        /// <summary>
+        /// Совершить прерывание. Некоторые полезные прерывания можно найти в <see cref="Ints"/>.
+        /// </summary>
+        /// <param name="interruption">Прерывание, которое необходимо совершить</param>
+        public static void Interrupt(Interruption interruption)
+        {
+            Emit($"int {interruption}");
         }
 
         #endregion
@@ -262,6 +259,19 @@ namespace Acly.Assembler
         }
 
         /// <summary>
+        /// Добавить комментарий
+        /// </summary>
+        /// <param name="comment">Комментарий, который будет добавлен к коду</param>
+        public static void Comment(string comment)
+        {
+            Emit($"; {comment}");
+        }
+        /// <summary>
+        /// Добавить пустую строку
+        /// </summary>
+        public static void EmptyLine() => Emit();
+
+        /// <summary>
         /// Переключить режим работы процессора. Если будет указан текущий режим, то ничего не произойдёт.
         /// </summary>
         /// <param name="cpuMode">Новый режим работы процессора</param>
@@ -322,7 +332,7 @@ namespace Acly.Assembler
         /// <summary>
         /// Создать переменную
         /// </summary>
-        /// <param name="name">Название переменной</param>
+        /// <param name="name">Название переменной. Название должно быть уникальное, чтобы не было повторений</param>
         /// <param name="size">Размер переменной. Принимаются только x16, x32, x64</param>
         /// <param name="isReserved">Является ли переменная зарезервированной.
         /// Если true - то переменная будет находится в <see cref="Section.Data"/>, 
@@ -338,7 +348,7 @@ namespace Acly.Assembler
         /// <summary>
         /// Создать переменную массива
         /// </summary>
-        /// <param name="name">Название переменной</param>
+        /// <param name="name">Название переменной. Название должно быть уникальное, чтобы не было повторений</param>
         /// <param name="size">Размер переменной. Принимаются только x16, x32, x64</param>
         /// <param name="isReserved">Является ли переменная зарезервированной.
         /// Если true - то переменная будет находится в <see cref="Section.Data"/>, 

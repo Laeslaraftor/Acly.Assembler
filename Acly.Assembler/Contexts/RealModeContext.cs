@@ -64,6 +64,15 @@ namespace Acly.Assembler.Contexts
         /// </summary>
         public override GeneralRegister R15 { get; } = new(Size.x16, "R15W", null, new GeneralRegister(Size.x8, "R15B"));
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        public override GeneralRegister SourceIndex { get; } = new(Size.x16, "SI", null, new GeneralRegister(Size.x8, "SIL"));
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        public override GeneralRegister DestinationIndex { get; } = new(Size.x16, "DI", null, new GeneralRegister(Size.x8, "DIL"));
+
         #endregion
 
         #region Сегменты
