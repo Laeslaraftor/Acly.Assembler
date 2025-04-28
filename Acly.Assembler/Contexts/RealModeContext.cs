@@ -17,52 +17,52 @@ namespace Acly.Assembler.Contexts
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public override GeneralRegister Accumulator { get; } =  new(Size.x16, "AX", new(Size.x8, "AH"), new(Size.x8, "AL"));
+        public override GeneralRegister Accumulator { get; } =  new(Size.x16, "AX", new GeneralRegister(Size.x8, "AH"), new GeneralRegister(Size.x8, "AL"));
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public override GeneralRegister Base { get; } = new(Size.x16, "BX", new(Size.x8, "BH"), new(Size.x8, "BL"));
+        public override GeneralRegister Base { get; } = new(Size.x16, "BX", new GeneralRegister(Size.x8, "BH"), new GeneralRegister(Size.x8, "BL"));
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public override GeneralRegister Count { get; } = new(Size.x16, "CX", new(Size.x8, "CH"), new(Size.x8, "CL"));
+        public override GeneralRegister Count { get; } = new(Size.x16, "CX", new GeneralRegister(Size.x8, "CH"), new GeneralRegister(Size.x8, "CL"));
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public override GeneralRegister Data { get; } = new(Size.x16, "DX", new(Size.x8, "DH"), new(Size.x8, "DL"));
+        public override GeneralRegister Data { get; } = new(Size.x16, "DX", new GeneralRegister(Size.x8, "DH"), new GeneralRegister(Size.x8, "DL"));
 
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public override GeneralRegister R8 { get; } = new(Size.x16, "R8W", null, new(Size.x8, "R8B"));
+        public override GeneralRegister R8 { get; } = new(Size.x16, "R8W", null, new GeneralRegister(Size.x8, "R8B"));
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public override GeneralRegister R9 { get; } = new(Size.x16, "R9W", null, new(Size.x8, "R9B"));
+        public override GeneralRegister R9 { get; } = new(Size.x16, "R9W", null, new GeneralRegister(Size.x8, "R9B"));
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public override GeneralRegister R10 { get; } = new(Size.x16, "R10W", null, new(Size.x8, "R10B"));
+        public override GeneralRegister R10 { get; } = new(Size.x16, "R10W", null, new GeneralRegister(Size.x8, "R10B"));
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public override GeneralRegister R11 { get; } = new(Size.x16, "R11W", null, new(Size.x8, "R11B"));
+        public override GeneralRegister R11 { get; } = new(Size.x16, "R11W", null, new GeneralRegister(Size.x8, "R11B"));
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public override GeneralRegister R12 { get; } = new(Size.x16, "R12W", null, new(Size.x8, "R12B"));
+        public override GeneralRegister R12 { get; } = new(Size.x16, "R12W", null, new GeneralRegister(Size.x8, "R12B"));
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public override GeneralRegister R13 { get; } = new(Size.x16, "R13W", null, new(Size.x8, "R13B"));
+        public override GeneralRegister R13 { get; } = new(Size.x16, "R13W", null, new GeneralRegister(Size.x8, "R13B"));
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public override GeneralRegister R14 { get; } = new(Size.x16, "R14W", null, new(Size.x8, "R14B"));
+        public override GeneralRegister R14 { get; } = new(Size.x16, "R14W", null, new GeneralRegister(Size.x8, "R14B"));
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
-        public override GeneralRegister R15 { get; } = new(Size.x16, "R15W", null, new(Size.x8, "R15B"));
+        public override GeneralRegister R15 { get; } = new(Size.x16, "R15W", null, new GeneralRegister(Size.x8, "R15B"));
 
         #endregion
 

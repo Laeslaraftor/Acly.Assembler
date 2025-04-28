@@ -21,7 +21,7 @@ namespace Acly.Assembler.Contexts
         {
             get
             {
-                _accumulator ??= new(Size.x64, "RAX", null, base.Accumulator);
+                _accumulator ??= new(Size.x64, "RAX", null, () => base.Accumulator);
                 return _accumulator;
             }
         }
@@ -32,7 +32,7 @@ namespace Acly.Assembler.Contexts
         {
             get
             {
-                _base ??= new(Size.x64, "RBX", null, base.Base);
+                _base ??= new(Size.x64, "RBX", null, () => base.Base);
                 return _base;
             }
         }
@@ -43,7 +43,7 @@ namespace Acly.Assembler.Contexts
         {
             get
             {
-                _count ??= new(Size.x64, "RCX", null, base.Count);
+                _count ??= new(Size.x64, "RCX", null, () => base.Count);
                 return _count;
             }
         }
@@ -54,7 +54,7 @@ namespace Acly.Assembler.Contexts
         {
             get
             {
-                _data ??= new(Size.x64, "RDX", null, base.Data);
+                _data ??= new(Size.x64, "RDX", null, () => base.Data);
                 return _data;
             }
         }
@@ -66,7 +66,7 @@ namespace Acly.Assembler.Contexts
         {
             get
             {
-                _r8 ??= new(Size.x64, "R8", null, base.R8);
+                _r8 ??= new(Size.x64, "R8", null, () => base.R8);
                 return _r8;
             }
         }
@@ -77,7 +77,7 @@ namespace Acly.Assembler.Contexts
         {
             get
             {
-                _r9 ??= new(Size.x64, "R9", null, base.R9);
+                _r9 ??= new(Size.x64, "R9", null, () => base.R9);
                 return _r9;
             }
         }
@@ -88,7 +88,7 @@ namespace Acly.Assembler.Contexts
         {
             get
             {
-                _r10 ??= new(Size.x64, "R10", null, base.R10);
+                _r10 ??= new(Size.x64, "R10", null, () => base.R10);
                 return _r10;
             }
         }
@@ -99,7 +99,7 @@ namespace Acly.Assembler.Contexts
         {
             get
             {
-                _r11 ??= new(Size.x64, "R11", null, base.R11);
+                _r11 ??= new(Size.x64, "R11", null, () => base.R11);
                 return _r11;
             }
         }
@@ -110,7 +110,7 @@ namespace Acly.Assembler.Contexts
         {
             get
             {
-                _r12 ??= new(Size.x64, "R12", null, base.R12);
+                _r12 ??= new(Size.x64, "R12", null, () => base.R12);
                 return _r12;
             }
         }
@@ -121,7 +121,7 @@ namespace Acly.Assembler.Contexts
         {
             get
             {
-                _r13 ??= new(Size.x64, "R13", null, base.R13);
+                _r13 ??= new(Size.x64, "R13", null, () => base.R13);
                 return _r13;
             }
         }
@@ -132,7 +132,7 @@ namespace Acly.Assembler.Contexts
         {
             get
             {
-                _r14 ??= new(Size.x64, "R14", null, base.R14);
+                _r14 ??= new(Size.x64, "R14", null, () => base.R14);
                 return _r14;
             }
         }
@@ -143,7 +143,7 @@ namespace Acly.Assembler.Contexts
         {
             get
             {
-                _r15 ??= new(Size.x64, "R15", null, base.R15);
+                _r15 ??= new(Size.x64, "R15", null, () => base.R15);
                 return _r15;
             }
         }
