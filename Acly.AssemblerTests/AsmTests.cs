@@ -5,11 +5,11 @@ using Acly.Assembler.Interruptions;
 
 namespace Acly.Assembler.Tests
 {
-    [TestClass()]
+    [TestClass]
     public class AsmTests
     {
-        [TestMethod()]
-        public void SwitchTest()
+        [TestMethod]
+        public void PrintProgramTest()
         {
             Asm.CreateVariable("TestVariable", Size.x64);
             AsmSettings.UpperCaseRegisters = false;
@@ -56,6 +56,57 @@ namespace Acly.Assembler.Tests
             Asm.Context.Accumulator.Set(60);
             Asm.Context.DestinationIndex.Xor(Asm.Context.DestinationIndex);
             Asm.SystemCall();
+
+            Debug.WriteLine(Asm.GetAssembly());
+        }
+        [TestMethod]
+        public void GdtTest()
+        {
+            var gdt = Asm.CreateGlobalDescriptorTable("gdtTest");
+            var kernelDescriptor = gdt.CreateCodeSegment("kernelDescriptor");
+            kernelDescriptor.BaseAddress = 0;
+            kernelDescriptor.Limit = 0xFFFFFFFF;
+            kernelDescriptor.PrivilegeLevel = PrivilegeLevel.Ring0;
+            kernelDescriptor.Flags = SegmentFlags.Executable | SegmentFlags.Readable |
+               SegmentFlags.Granularity | SegmentFlags.DefaultBig;
+            kernelDescriptor.Size = Tables.DescriptorSize.Byte8;
+
+            Asm.EmptyLine();
+            Asm.StartWithMode(Mode.x32);
+
+            Asm.LoadGlobalDescriptorTable(gdt);
+            Asm.Comment("Деление на ноль");
+            Asm.Context.Accumulator.Set(10);
+            Asm.Context.Data.Set(10);
+            Asm.Context.Count.Set(0);
+            Asm.Context.Count.Divide();
+
+            Debug.WriteLine(Asm.GetAssembly());
+        }
+        [TestMethod]
+        public void IdtTest()
+        {
+            var handler = Asm.CreateConstant("HANDLER_POINTER", "handler");
+
+            var idt = Asm.CreateInterruptionDescriptorTable("idtTest");
+            var divideZeroHandler = idt.CreateInterruptGate("divideZeroHandler");
+            divideZeroHandler.Interruption = Ints.CPU.DivideByZero;
+            divideZeroHandler.CodeSegmentSelector = 0;
+            divideZeroHandler.HandlerOffset = 0;
+            divideZeroHandler.PrivilegeLevel = PrivilegeLevel.Ring0;
+
+            Asm.EmptyLine();
+            Asm.StartWithMode(Mode.x32);
+
+            Asm.LoadInterruptionDescriptorTable(idt);
+            Asm.Comment("Деление на ноль");
+            Asm.Context.Accumulator.Set(10);
+            Asm.Context.Data.Set(10);
+            Asm.Context.Count.Set(0);
+            Asm.Context.Count.Divide();
+
+            Asm.Label("handler");
+            Asm.Return();
 
             Debug.WriteLine(Asm.GetAssembly());
         }

@@ -4,6 +4,7 @@ using System;
 using Acly.Assembler.Registers;
 using System.Collections.Generic;
 using Acly.Assembler.Interruptions;
+using Acly.Assembler.Tables;
 
 namespace Acly.Assembler
 {
@@ -43,6 +44,7 @@ namespace Acly.Assembler
         private static readonly StringBuilder _dataBuilder = new();
         private static readonly StringBuilder _bssBuilder = new();
         private static readonly Dictionary<string, Variable> _variables = new();
+        private static readonly Dictionary<string, DescriptorTable> _tables = new();
 
         private static StringBuilder? _builder;
         private static CpuModeContext? _currentContext;
@@ -67,25 +69,33 @@ namespace Acly.Assembler
             Emit($"{name}:", false);
         }
         /// <summary>
-        /// Поставить оператор возвращения
-        /// </summary>
-        public static void Return()
-        {
-            Emit("ret");
-        }
-        /// <summary>
-        /// Остановить процессор
+        /// hlt. Остановить процессор
         /// </summary>
         public static void Halt()
         {
             Emit("hlt");
         }
         /// <summary>
-        /// Поставить оператора получения информации о процессоре
+        /// cpuid. Получить информацию о процессоре
         /// </summary>
         public static void CpuId()
         {
             Emit("cpuid");
+        }
+
+        /// <summary>
+        /// ret. Вернуться из процедуры
+        /// </summary>
+        public static void Return()
+        {
+            Emit("ret");
+        }
+        /// <summary>
+        /// retfq. Вернуться из дальней процедуры
+        /// </summary>
+        public static void ReturnFar()
+        {
+            Emit("retfq");
         }
 
         /// <summary>
@@ -112,6 +122,23 @@ namespace Acly.Assembler
         {
             Emit($"call {label}");
         }
+        /// <summary>
+        /// callf. Вызвать дальнюю функцию по заданному адресу
+        /// </summary>
+        /// <param name="address">Адрес функции</param>
+        public static void CallFar(MemoryOperand address)
+        {
+            Emit($"callf {address}");
+        }
+        /// <summary>
+        /// callf. Вызвать дальнюю функцию на названию
+        /// </summary>
+        /// <param name="label">Название функции</param>
+        public static void CallFar(string label)
+        {
+            Emit($"callf {label}");
+        }
+
         /// <summary>
         /// Перейти к выполнению код по заданному адресу
         /// </summary>
@@ -244,6 +271,115 @@ namespace Acly.Assembler
 
         #endregion
 
+        #region Таблицы
+
+        /// <summary>
+        /// Создать глобальную таблицу дескрипторов (GDT).
+        /// Эта таблица может быть только в единственном экземпляре!
+        /// </summary>
+        /// <param name="name">Название таблицы</param>
+        /// <returns>Новая глобальная таблица дескрипторов (GDT)</returns>
+        public static GlobalDescriptorTable CreateGlobalDescriptorTable(string name)
+        {
+            foreach (var createdTable in _tables.Values)
+            {
+                if (createdTable is GlobalDescriptorTable)
+                {
+                    throw new AssemblerException("Глобальная таблица дескрипторов (GDT) может быть только в единственном экземпляре!");
+                }
+            }
+
+            GlobalDescriptorTable table = new(name);
+            _tables.Add(name, table);
+
+            return table;
+        }
+        /// <summary>
+        /// Создать локальную таблицу дескрипторов (LDT)
+        /// </summary>
+        /// <param name="name">Название таблицы</param>
+        /// <returns>Новая глобальная таблица дескрипторов (GDT)</returns>
+        public static LocalDescriptorTable CreateLocalDescriptorTable(string name)
+        {
+            LocalDescriptorTable table = new(name);
+            _tables.Add(name, table);
+
+            return table;
+        }
+        /// <summary>
+        /// Создать таблицу дескрипторов прерывания (IDT)
+        /// </summary>
+        /// <param name="name">Название таблицы</param>
+        /// <returns>Новая глобальная таблица дескрипторов (GDT)</returns>
+        public static InterruptDescriptorTable CreateInterruptionDescriptorTable(string name)
+        {
+            InterruptDescriptorTable table = new(name);
+            _tables.Add(name, table);
+
+            return table;
+        }
+
+        /// <summary>
+        /// lgdt. Загрузить глобальную таблицу дескрипторов (GDT).
+        /// </summary>
+        /// <param name="table">Таблица, которую необходимо загрузить</param>
+        public static void LoadGlobalDescriptorTable(GlobalDescriptorTable table)
+        {
+            DescriptorTableCommand("lgdt", table);
+        }
+        /// <summary>
+        /// lldt. Загрузить локальную таблицу дескрипторов (LDT).
+        /// Эта таблица должны быть предварительно описана в глобальной таблице дескрипторов (GDT)
+        /// </summary>
+        /// <param name="table">Таблица, которую необходимо загрузить</param>
+        public static void LoadLocalDescriptorTable(LocalDescriptorTable table)
+        {
+            DescriptorTableCommand("lldt", table);
+        }
+        /// <summary>
+        /// lidt. Загрузить таблицу прерываний (IDT).
+        /// </summary>
+        /// <param name="table">Таблица, которую необходимо загрузить</param>
+        public static void LoadInterruptionDescriptorTable(InterruptDescriptorTable table)
+        {
+            DescriptorTableCommand("lidt", table);
+        }
+
+        /// <summary>
+        /// sgdt. Сохранить текущую глобальную таблицу дескрипторов (GDT).
+        /// Полезно для диагностики или виртуализации.
+        /// </summary>
+        /// <param name="table">Таблица, которую необходимо загрузить</param>
+        public static void SaveGlobalDescriptorTable(GlobalDescriptorTable table)
+        {
+            DescriptorTableCommand("sgdt", table);
+        }
+        /// <summary>
+        /// sldt. Сохранить текущую локальную таблицу дескрипторов (LDT). 
+        /// Может возвращать 0, если LDT не используется
+        /// </summary>
+        /// <param name="table">Таблица, которую необходимо загрузить</param>
+        public static void SaveLocalDescriptorTable(LocalDescriptorTable table)
+        {
+            DescriptorTableCommand("sldt", table);
+        }
+        /// <summary>
+        /// sidt. Сохранить текущую таблицу прерываний (IDT).
+        /// Полезно для отладки или rootkit'ов
+        /// </summary>
+        /// <param name="table">Таблица, которую необходимо загрузить</param>
+        public static void SaveInterruptionDescriptorTable(InterruptDescriptorTable table)
+        {
+            DescriptorTableCommand("sidt", table);
+        }
+
+        private static void DescriptorTableCommand(string command, DescriptorTable table)
+        {
+            Emit($"{command} [{table.GetFormattedName()}{DescriptorTable.NamePostfix}]");
+        }
+
+        #endregion
+
         #region Дополнительно
 
         /// <summary>
@@ -327,7 +463,7 @@ namespace Acly.Assembler
 
         #endregion
 
-        #region Переменные
+        #region Переменные и константы
 
         /// <summary>
         /// Создать переменную
@@ -362,6 +498,31 @@ namespace Acly.Assembler
             return result;
         }
 
+        /// <summary>
+        /// equ. Приравнять константу значению
+        /// </summary>
+        /// <param name="name">Название константы</param>
+        /// <param name="operand">Значение, которому будет равна константа</param>
+        /// <returns>Созданная константа</returns>
+        public static Variable CreateConstant(string name, MemoryOperand operand)
+        {
+            Emit($"{name} equ {operand}", false);
+
+            return new(Size.x64, name, true);
+        }
+        /// <summary>
+        /// equ. Приравнять константу значению
+        /// </summary>
+        /// <param name="name">Название константы</param>
+        /// <param name="label">Значение, которому будет равна константа</param>
+        /// <returns>Созданная константа</returns>
+        public static Variable CreateConstant(string name, string label)
+        {
+            Emit($"{name} equ {label}", false);
+
+            return new(Size.x64, name, true);
+        }
+
         #endregion
 
         #region Управление
@@ -380,9 +541,21 @@ namespace Acly.Assembler
             var dataVariables = GetVariables(true);
             var bssVariables = GetVariables(false);
 
-            if (dataVariables != null)
+            if (dataVariables != null || _tables.Count > 0)
             {
-                AppendSection(result, Assembler.Section.Data, dataVariables);
+                AppendSection(result, Assembler.Section.Data, null);
+                
+                if (dataVariables != null)
+                {
+                    result.AppendLine(dataVariables.TrimEnd());
+                }
+                if (_tables.Count > 0)
+                {
+                    foreach (var table in _tables.Values)
+                    {
+                        result.AppendLine(table.ToAssembler());
+                    }
+                }
             }
             if (bssVariables != null)
             {
@@ -392,11 +565,15 @@ namespace Acly.Assembler
             return result.ToString();
         }
 
-        private static void AppendSection(StringBuilder builder, Section section, string content)
+        private static void AppendSection(StringBuilder builder, Section section, string? content)
         {
             builder.AppendLine();
             builder.AppendLine($"section .{section.ToString().ToLower()}");
-            builder.AppendLine(content.TrimEnd());
+            
+            if (content != null)
+            {
+                builder.AppendLine(content.TrimEnd());
+            }
         }
         private static string? GetVariables(bool isReserved)
         {
