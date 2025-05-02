@@ -18,7 +18,7 @@ namespace Acly.Assembler.Tables
         /// <summary>
         /// Прерывание дескриптора
         /// </summary>
-        public virtual Interruption Interruption { get; set; }
+        public virtual Interruption Interruption { get; set; } = 0;
         /// <summary>
         /// Тип шлюза
         /// </summary>

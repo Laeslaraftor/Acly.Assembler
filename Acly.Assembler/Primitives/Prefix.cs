@@ -10,6 +10,10 @@
         /// </summary>
         Byte,
         /// <summary>
+        /// Слово
+        /// </summary>
+        Word,
+        /// <summary>
         /// 32 битное значение
         /// </summary>
         Dword,

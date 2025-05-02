@@ -5,51 +5,34 @@ namespace Acly.Assembler.Interruptions
     /// <summary>
     /// Прерывание
     /// </summary>
-    public readonly struct Interruption : IComparable, IEquatable<Interruption>
+    public abstract class Interruption : IComparable, IEquatable<Interruption>
     {
         /// <summary>
-        /// Создать прерывание
+        /// Создать новый экземпляр прерывания
         /// </summary>
-        /// <param name="index"></param>
-        public Interruption(byte index)
+        /// <param name="index">Номер прерывания</param>
+        protected Interruption(byte index) : this(index, $"0x{index:0}")
         {
-            _index = index;
-            _value = $"0x{index:X}";
+        }
+        /// <summary>
+        /// Создать новый экземпляр прерывания
+        /// </summary>
+        /// <param name="index">Номер прерывания</param>
+        /// <param name="name">Название прерывания</param>
+        protected Interruption(byte index, string name)
+        {
+            Index = index;
+            Value = name;
         }
 
         /// <summary>
         /// Номер прерывания
         /// </summary>
-        public readonly byte Index
-        {
-            get
-            {
-                if (_index == null)
-                {
-                    throw new AssemblerException("Недопустимое прерывание");
-                }
-
-                return _index.GetValueOrDefault();
-            }
-        }
+        public byte Index { get; }
         /// <summary>
         /// Название прерывания
         /// </summary>
-        public readonly string Value
-        {
-            get
-            {
-                if (_value == null)
-                {
-                    throw new AssemblerException("Недопустимое прерывание");
-                }
-
-                return _value;
-            }
-        }
-
-        private readonly byte? _index;
-        private readonly string? _value;
+        public string Value { get; }
 
         #region Операторы
 
@@ -59,7 +42,7 @@ namespace Acly.Assembler.Interruptions
         /// <param name="index"><inheritdoc/></param>
         public static implicit operator Interruption(byte index)
         {
-            return new(index);
+            return new SimpleInterruption(index);
         }
 
         #endregion
@@ -83,8 +66,8 @@ namespace Acly.Assembler.Interruptions
         /// <returns><inheritdoc/></returns>
         public bool Equals(Interruption other)
         {
-            return _index == other._index &&
-                   _value == other._value;
+            return Index == other.Index &&
+                   Value == other.Value;
         }
         /// <summary>
         /// <inheritdoc/>
@@ -93,12 +76,12 @@ namespace Acly.Assembler.Interruptions
         /// <returns><inheritdoc/></returns>
         public int CompareTo(object obj)
         {
-            if (obj is not Interruption interruption || interruption._index == null)
+            if (obj is not Interruption interruption)
             {
                 return -1;
             }
 
-            return _index.GetValueOrDefault().CompareTo(interruption._index.GetValueOrDefault());
+            return Index.CompareTo(interruption.Index);
         }
         /// <summary>
         /// <inheritdoc/>
@@ -106,7 +89,7 @@ namespace Acly.Assembler.Interruptions
         /// <returns><inheritdoc/></returns>
         public override int GetHashCode()
         {
-            return HashCode.Combine(_index, _value);
+            return HashCode.Combine(Index, Value);
         }
 
         /// <summary>
@@ -115,7 +98,7 @@ namespace Acly.Assembler.Interruptions
         /// <returns></returns>
         public override string ToString()
         {
-            return Value;
+            return $"0x{Index:X}";
         }
         
 

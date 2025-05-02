@@ -1,4 +1,6 @@
-﻿using Acly.Assembler.Registers;
+﻿using Acly.Assembler.Memory;
+using Acly.Assembler.Registers;
+using Acly.Assembler.Tables;
 
 namespace Acly.Assembler.Contexts
 {
@@ -437,12 +439,62 @@ namespace Acly.Assembler.Contexts
         private GeneralRegister? _sourceIndex;
         private GeneralRegister? _destinationIndex;
 
+        #region Константы
+
+        /// <summary>
+        /// Бит PE
+        /// </summary>
+        public const byte ProtectedModeEnableBit = 0x1;
+
+        #endregion
+
         #region Статика
 
         /// <summary>
         /// Глобальный экземпляр 32 битного контекста
         /// </summary>
         public static readonly new ProtectedModeContext Instance = new();
+
+        /// <summary>
+        /// Включить защищённый режим
+        /// </summary>
+        /// <param name="gdt">Глобальная таблица дескрипторов для включения защищённого режима</param>
+        public static void EnableProtectedMode(GlobalDescriptorTable gdt)
+        {
+            Asm.DisableInterruptions();
+            Asm.LoadGlobalDescriptorTable(gdt);
+
+            Instance.Accumulator.Set(Instance.Control0);
+            Instance.Accumulator.Or(ProtectedModeEnableBit);
+            Instance.Control0.Set(Instance.Accumulator);
+        }
+        /// <summary>
+        /// Включить PAE
+        /// </summary>
+        public static void EnablePhysicalAddressExtension()
+        {
+            Instance.Accumulator.Set(Instance.Control4);
+            Instance.Accumulator.Or(1 << 5);
+            Instance.Control4.Set(Instance.Accumulator);
+        }
+        /// <summary>
+        /// Установить адрес PML4 в CR3
+        /// </summary>
+        /// <param name="pml4">PML4 таблица, адрес которой надо установить</param>
+        public static void SetPML4(PML4Table pml4)
+        {
+            Instance.Accumulator.Set(pml4.PhysicalAddress);
+            Instance.Control3.Set(Instance.Accumulator);
+        }
+        /// <summary>
+        /// Включить пейджинг (установка CR0.PG = 1)
+        /// </summary>
+        public static void EnablePaging()
+        {
+            Instance.Accumulator.Set(Instance.Control0);
+            Instance.Accumulator.Or(1 << 31);
+            Instance.Control0.Set(Instance.Accumulator);
+        }
 
         #endregion
     }

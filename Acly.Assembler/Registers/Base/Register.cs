@@ -1,6 +1,5 @@
 ﻿using Acly.Assembler.Contexts;
 using System;
-using System.ComponentModel;
 
 namespace Acly.Assembler.Registers
 {
@@ -45,7 +44,7 @@ namespace Acly.Assembler.Registers
         /// </summary>
         protected virtual bool CanChangeCase { get; } = true;
 
-        private string _name;
+        private readonly string _name;
 
         #region Основные операции
 
@@ -58,7 +57,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void Set(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            Operation("mov", typeName, asPointer, source);
+            Operation(AsmOperators.Set, typeName, asPointer, source);
         }
         /// <summary>
         /// Прибавить значение
@@ -69,7 +68,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void Add(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            Operation("add", typeName, asPointer, source);
+            Operation(AsmOperators.Add, typeName, asPointer, source);
         }
         /// <summary>
         /// Вычесть значение
@@ -80,7 +79,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void Subtract(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            Operation("sub", typeName, asPointer, source);
+            Operation(AsmOperators.Subtract, typeName, asPointer, source);
         }
         /// <summary>
         /// Умножить без знака на значение
@@ -91,7 +90,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void Multiply(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            Operation("mul", typeName, asPointer, source);
+            Operation(AsmOperators.Multiply, typeName, asPointer, source);
         }
         /// <summary>
         /// Умножить со знаком на значение
@@ -102,7 +101,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void IMultiply(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            Operation("imul", typeName, asPointer, source);
+            Operation(AsmOperators.IMultiply, typeName, asPointer, source);
         }
         /// <summary>
         /// Разделить без знака на значение. 
@@ -110,7 +109,7 @@ namespace Acly.Assembler.Registers
         /// </summary>
         public virtual void Divide()
         {
-            SimpleOperation("div");
+            AsmOperators.Divide(this);
         }
         /// <summary>
         /// Разделить со знаком на значение.
@@ -118,21 +117,21 @@ namespace Acly.Assembler.Registers
         /// </summary>
         public virtual void IDivide()
         {
-            SimpleOperation("idiv");
+            AsmOperators.IDivide(this);
         }
         /// <summary>
         /// Увеличить значение на 1
         /// </summary>
         public virtual void Increment()
         {
-            SimpleOperation("inc");
+            AsmOperators.Increment(this);
         }
         /// <summary>
         /// Уменьшить значение на 1
         /// </summary>
         public virtual void Decrement()
         {
-            SimpleOperation("dec");
+            AsmOperators.Decrement(this);
         }
 
         /// <summary>
@@ -144,21 +143,21 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void LoadEffectiveAddress(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            Operation("lea", typeName, asPointer, source);
+            Operation(AsmOperators.LoadEffectiveAddress, typeName, asPointer, source);
         }
         /// <summary>
         /// Поместить значение в стек
         /// </summary>
         public virtual void Push()
         {
-            SimpleOperation("push");
+            AsmOperators.Push(this);
         }
         /// <summary>
         /// Извлечь значение из стека
         /// </summary>
         public virtual void Pop()
         {
-            SimpleOperation("pop");
+            AsmOperators.Pop(this);
         }
 
         #endregion
@@ -174,7 +173,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void ShiftLeft(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            CountOperation("shl", typeName, asPointer, source);
+            Operation(AsmOperators.ShiftLeft, typeName, asPointer, source);
         }
         /// <summary>
         /// Сдвинуть вправо
@@ -185,7 +184,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void ShiftRight(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            CountOperation("shr", typeName, asPointer, source);
+            Operation(AsmOperators.ShiftRight, typeName, asPointer, source);
         }
         /// <summary>
         /// Арифметически сдвинуть влево
@@ -196,7 +195,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void ShiftArithmeticLeft(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            CountOperation("sal", typeName, asPointer, source);
+            Operation(AsmOperators.ShiftArithmeticLeft, typeName, asPointer, source);
         }
         /// <summary>
         /// Арифметически сдвинуть вправо
@@ -207,7 +206,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void ShiftArithmeticRight(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            CountOperation("sar", typeName, asPointer, source);
+            Operation(AsmOperators.ShiftArithmeticRight, typeName, asPointer, source);
         }
         /// <summary>
         /// Циклически сдвинуть влево. 
@@ -219,7 +218,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void RotateLeft(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            CountOperation("rol", typeName, asPointer, source);
+            Operation(AsmOperators.RotateLeft, typeName, asPointer, source);
         }
         /// <summary>
         /// Циклически сдвинуть вправо. 
@@ -231,7 +230,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void RotateRight(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            CountOperation("ror", typeName, asPointer, source);
+            Operation(AsmOperators.RotateRight, typeName, asPointer, source);
         }
         /// <summary>
         /// Циклически сдвинуть влево через флаг переноса CF.
@@ -243,7 +242,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void RotateCarryLeft(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            CountOperation("rcl", typeName, asPointer, source);
+            Operation(AsmOperators.RotateCarryLeft, typeName, asPointer, source);
         }
         /// <summary>
         /// Циклически сдвинуть вправо через флаг переноса CF.
@@ -255,7 +254,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void RotateCarryRight(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            CountOperation("rcr", typeName, asPointer, source);
+            Operation(AsmOperators.RotateCarryRight, typeName, asPointer, source);
         }
 
         #endregion
@@ -271,7 +270,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void And(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            Operation("and", typeName, asPointer, source);
+            Operation(AsmOperators.And, typeName, asPointer, source);
         }
         /// <summary>
         /// Логическая операция ИЛИ.
@@ -282,7 +281,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void Or(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            Operation("or", typeName, asPointer, source);
+            Operation(AsmOperators.Or, typeName, asPointer, source);
         }
         /// <summary>
         /// Логическая операция исключающее ИЛИ.
@@ -293,14 +292,14 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void Xor(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            Operation("xor", typeName, asPointer, source);
+            Operation(AsmOperators.Xor, typeName, asPointer, source);
         }
         /// <summary>
         /// Логическая операция НЕ. Инвертирует все биты
         /// </summary>
         public virtual void Not()
         {
-            SimpleOperation("not");
+            AsmOperators.Not(this);
         }
 
         #endregion
@@ -316,7 +315,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void EqualsZero(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            Operation("test", typeName, asPointer, source);
+            Operation(AsmOperators.Test, typeName, asPointer, source);
         }
         /// <summary>
         /// Проверить равны ли значения
@@ -327,7 +326,7 @@ namespace Acly.Assembler.Registers
         /// и он будет обособлен квадратными скобками</param>
         public virtual void Compare(Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            Operation("cmp", typeName, asPointer, source);
+            Operation(AsmOperators.Compare, typeName, asPointer, source);
         }
 
         #endregion
@@ -344,58 +343,17 @@ namespace Acly.Assembler.Registers
         }
 
         /// <summary>
-        /// Выполнить операцию с подсчётом
-        /// </summary>
-        /// <param name="name">Название операции. Например shl, shr</param>
-        /// <param name="count">Источник значения</param>
-        /// <param name="typeName">Тип данных</param>
-        /// <param name="asPointer">Если true, то будет считаться что регистр содержит адрес на значение 
-        /// и он будет обособлен квадратными скобками</param>
-        protected void CountOperation(string name, Prefix? typeName, bool asPointer, MemoryOperand count)
-        {
-            if (Asm.Context.Count.Lower == null || RealModeContext.Instance.Count.Lower == null)
-            {
-                return;
-            }
-
-            Asm.Context.Count.Push();
-            Asm.Context.Count.Set(count);
-
-            Operation(name, typeName, asPointer, RealModeContext.Instance.Count.Lower);
-
-            Asm.Context.Count.Pop();
-        }
-        /// <summary>
         /// Выполнить простую операцию
         /// </summary>
-        /// <param name="name">Название операции. Например inc, dec</param>
-        protected void SimpleOperation(string name)
-        {
-            Asm.Emit($"{name} {Name}");
-        }
-        /// <summary>
-        /// Выполнить простую операцию
-        /// </summary>
-        /// <param name="name">Название операции. Например, mov, add, mul, div</param>
+        /// <param name="operation">Операция</param>
         /// <param name="source">Значение для прохерачивания. {operation} {this}, {source}</param>
         /// <param name="typeName">Тип данных</param>
         /// <param name="asPointer">Если true, то будет считаться что регистр содержит адрес на значение 
         /// и он будет обособлен квадратными скобками</param>
-        protected void Operation(string name, Prefix? typeName, bool asPointer, MemoryOperand? source)
+        protected void Operation(Action<Prefix?, MemoryOperand, Prefix?, MemoryOperand> operation, 
+                                 Prefix? typeName, bool asPointer, MemoryOperand source)
         {
-            string registerName = Name;
-            string? prefix = null;
-
-            if (asPointer)
-            {
-                registerName = $"[{registerName}]";
-            }
-            if (typeName != null)
-            {
-                prefix = " " + typeName.ToString().ToLower();
-            }
-
-            Asm.Emit($"{name}{prefix} {registerName}, {source}");
+            operation(typeName, MemoryOperand.Create(this, asPointer), null, source);
         }
 
         #endregion

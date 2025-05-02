@@ -3,10 +3,14 @@
     internal class AddressMemoryOperand : MemoryOperand
     {
         public AddressMemoryOperand(Address register, bool asPointer)
-            : this(register, null, 0, 1, asPointer)
+            : this(null, register, null, 0, 1, asPointer)
         {
         }
         public AddressMemoryOperand(Address register, Address? index, int displacement, int scale, bool asPointer)
+            : this(null, register, index, displacement, scale, asPointer)
+        {
+        }
+        public AddressMemoryOperand(Address? segment, Address register, Address? index, int displacement, int scale, bool asPointer)
         {
             Register = register;
             Index = index;
@@ -14,7 +18,14 @@
             Scale = scale;
             AsPointer = asPointer;
 
-            Value = register;
+            Value = string.Empty;
+
+            if (segment != null)
+            {
+                Value += $"{segment.Value}:";
+            }
+
+            Value += register;
 
             if (index != null)
             {
@@ -22,7 +33,7 @@
             }
             if (scale != 1)
             {
-                Value += $" + {scale}";
+                Value += $" * {scale}";
             }
             if (displacement != 0)
             {

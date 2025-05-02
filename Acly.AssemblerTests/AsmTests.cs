@@ -110,5 +110,11 @@ namespace Acly.Assembler.Tests
 
             Debug.WriteLine(Asm.GetAssembly());
         }
+        [TestMethod]
+        public void ComplexOperandTest()
+        {
+            var operand = MemoryOperand.Create(RealModeContext.Instance.ExtraSegment, 0x1C, null, scale: 4);
+            Debug.WriteLine(operand);
+        }
     }
 }

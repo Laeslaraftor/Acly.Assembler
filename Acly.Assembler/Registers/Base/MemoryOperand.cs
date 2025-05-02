@@ -31,6 +31,30 @@
         /// <summary>
         /// <inheritdoc/>
         /// </summary>
+        /// <param name="value"><inheritdoc/></param>
+        public static implicit operator MemoryOperand(int value)
+        {
+            return Create(value);
+        }
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="value"><inheritdoc/></param>
+        public static implicit operator MemoryOperand(byte value)
+        {
+            return Create(value);
+        }
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="value"><inheritdoc/></param>
+        public static implicit operator MemoryOperand(short value)
+        {
+            return Create(value);
+        }
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
         /// <param name="register"><inheritdoc/></param>
         public static implicit operator MemoryOperand(Register register)
         {
@@ -64,92 +88,51 @@
             return new CharMemoryOperand(symbol);
         }
         /// <summary>
-        /// Создать операцию с регистром
+        /// Создать операцию
         /// </summary>
-        /// <param name="register">Регистр операции</param>
+        /// <param name="address">Адрес, регистр или строковое значение</param>
         /// <param name="asPointer">Если true, то будет считаться что регистр содержит адрес на значение 
         /// и он будет обособлен квадратными скобками</param>
         /// <returns>Операция с регистрами и адресами</returns>
-        public static MemoryOperand Create(Register register, bool asPointer = false)
+        public static MemoryOperand Create(Address address, bool asPointer = false)
         {
-            return new AddressMemoryOperand(register, asPointer);
-        }
-        /// <summary>
-        /// Создать операцию со значением
-        /// </summary>
-        /// <param name="value">Значение операции</param>
-        /// <param name="asPointer">Если true, то будет считаться что значение содержит адрес 
-        /// и он будет обособлен квадратными скобками</param>
-        /// <returns>Операция с регистрами и адресами</returns>
-        public static MemoryOperand Create(ulong value, bool asPointer = false)
-        {
-            return new AddressMemoryOperand(value, asPointer);
+            return new AddressMemoryOperand(address, asPointer);
         }
         /// <summary>
         /// Создать операцию с регистром
         /// </summary>
-        /// <param name="register">Регистр операции</param>
+        /// <param name="address">Адрес, регистр или строковое значение</param>
         /// <param name="displacement">Константное смещение</param>
         /// <param name="scale">Масштаб</param>
         /// <returns>Операция с регистрами и адресами</returns>
-        public static MemoryOperand Create(Register register, int displacement, int scale = 1)
+        public static MemoryOperand Create(Address address, int displacement, int scale = 1)
         {
-            return new AddressMemoryOperand(register, null, displacement, scale, true);
-        }
-        /// <summary>
-        /// Создать операцию со значением
-        /// </summary>
-        /// <param name="value">Значение операции</param>
-        /// <param name="displacement">Константное смещение</param>
-        /// <param name="scale">Масштаб</param>
-        /// <returns>Операция с регистрами и адресами</returns>
-        public static MemoryOperand Create(ulong value, int displacement, int scale = 1)
-        {
-            return new AddressMemoryOperand(value, null, displacement, scale, true);
+            return new AddressMemoryOperand(address, null, displacement, scale, true);
         }
         /// <summary>
         /// Создать операцию с регистром
         /// </summary>
-        /// <param name="register">Регистр операции</param>
+        /// <param name="address">Адрес, регистр или строковое значение</param>
         /// <param name="index">Смещение</param>
         /// <param name="displacement">Константное смещение</param>
         /// <param name="scale">Масштаб</param>
         /// <returns>Операция с регистрами и адресами</returns>
-        public static MemoryOperand Create(Register register, Register index, int displacement = 0, int scale = 1)
+        public static MemoryOperand Create(Address address, Address index, int displacement = 0, int scale = 1)
         {
-            return new AddressMemoryOperand(register, index, displacement, scale, true);
+            return new AddressMemoryOperand(address, index, displacement, scale, true);
         }
         /// <summary>
         /// Создать операцию с регистром
         /// </summary>
-        /// <param name="register">Регистр операции</param>
+        /// <param name="segment">Базовый адрес сегмента или регистр</param>
+        /// <param name="address">Адрес, регистр или строковое значение</param>
         /// <param name="index">Смещение</param>
         /// <param name="displacement">Константное смещение</param>
         /// <param name="scale">Масштаб</param>
         /// <returns>Операция с регистрами и адресами</returns>
-        public static MemoryOperand Create(Register register, ulong index, int displacement = 0, int scale = 1)
+        public static MemoryOperand Create(Address segment, Address address, Address? index = null, int displacement = 0, int scale = 1)
         {
-            return new AddressMemoryOperand(register, index, displacement, scale, true);
-        }
-        /// <summary>
-        /// segment:offset. Если что то является указателем, то оно будет в скобках. Например, смещение как указатель: segment[offset]
-        /// </summary>
-        /// <param name="segment">Базовый адрес сегмента</param>
-        /// <param name="offsetOperand">Смещение внутри сегмента</param>
-        /// <returns>Операция с регистрами и адресами</returns>
-        public static MemoryOperand Create(Register segment, MemoryOperand offsetOperand)
-        {
-            return new SectionMemoryOperand(segment, offsetOperand);
-        }
-        /// <summary>
-        /// segment:offset. Если что то является указателем, то оно будет в скобках. Например, смещение как указатель: segment[offset]
-        /// </summary>
-        /// <param name="segment">Базовый адрес сегмента</param>
-        /// <param name="offsetOperand">Смещение внутри сегмента</param>
-        /// <returns>Операция с регистрами и адресами</returns>
-        public static MemoryOperand Create(ulong segment, MemoryOperand offsetOperand)
-        {
-            return new SectionMemoryOperand(segment, offsetOperand);
+            return new AddressMemoryOperand(segment, address, index, displacement, scale, true);
         }
 
         #endregion
