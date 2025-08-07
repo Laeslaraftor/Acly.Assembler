@@ -458,12 +458,8 @@ namespace Acly.Assembler.Contexts
         /// <summary>
         /// Включить защищённый режим
         /// </summary>
-        /// <param name="gdt">Глобальная таблица дескрипторов для включения защищённого режима</param>
-        public static void EnableProtectedMode(GlobalDescriptorTable gdt)
+        public static void EnableProtectedMode()
         {
-            Asm.DisableInterruptions();
-            Asm.LoadGlobalDescriptorTable(gdt);
-
             Instance.Accumulator.Set(Instance.Control0);
             Instance.Accumulator.Or(ProtectedModeEnableBit);
             Instance.Control0.Set(Instance.Accumulator);
@@ -474,7 +470,7 @@ namespace Acly.Assembler.Contexts
         public static void EnablePhysicalAddressExtension()
         {
             Instance.Accumulator.Set(Instance.Control4);
-            Instance.Accumulator.Or(1 << 5);
+            Instance.Accumulator.Or(MemoryOperand.Create("1 << 5"));
             Instance.Control4.Set(Instance.Accumulator);
         }
         /// <summary>
@@ -492,8 +488,48 @@ namespace Acly.Assembler.Contexts
         public static void EnablePaging()
         {
             Instance.Accumulator.Set(Instance.Control0);
-            Instance.Accumulator.Or(1 << 31);
+            Instance.Accumulator.Or(MemoryOperand.Create("1 << 31"));
             Instance.Control0.Set(Instance.Accumulator);
+        }
+        /// <summary>
+        /// Настроить сегменты данных. Будет задан второй дескриптор (0ч10)
+        /// </summary>
+        public static void SetupSegments()
+        {
+            SetupSegments(0x10);
+        }
+        /// <summary>
+        /// Настроить сегменты данных
+        /// </summary>
+        /// <param name="descriptorNumber">Номер дескриптора, который будет установлен в DS, SS, ES</param>
+        public static void SetupSegments(MemoryOperand descriptorNumber)
+        {
+            SetupSegments(descriptorNumber, descriptorNumber, descriptorNumber);
+        }
+        /// <summary>
+        /// Настроить сегменты данных
+        /// </summary>
+        /// <param name="dataDescriptor">Номер дескриптора данных</param>
+        /// <param name="stackDescriptor">Номер дескриптора стека</param>
+        /// <param name="extraDescriptor">Номер дополнительного дескриптора</param>
+        public static void SetupSegments(MemoryOperand dataDescriptor, MemoryOperand stackDescriptor, MemoryOperand extraDescriptor)
+        {
+            RealModeContext.Instance.Accumulator.Set(dataDescriptor);
+            RealModeContext.Instance.DataSegment.Set(RealModeContext.Instance.Accumulator);
+
+            if (dataDescriptor != stackDescriptor)
+            {
+                RealModeContext.Instance.Accumulator.Set(stackDescriptor);
+            }
+
+            RealModeContext.Instance.StackSegment.Set(RealModeContext.Instance.Accumulator);
+
+            if (stackDescriptor != extraDescriptor)
+            {
+                RealModeContext.Instance.Accumulator.Set(extraDescriptor);
+            }
+
+            RealModeContext.Instance.ExtraSegment.Set(RealModeContext.Instance.Accumulator);
         }
 
         #endregion

@@ -3,9 +3,9 @@
     /// <summary>
     /// Системный дескриптор
     /// </summary>
-    public class SystemDescriptor : StandardDescriptor
+    public class SystemDescriptor2 : StandardDescriptor
     {
-        internal SystemDescriptor(string name) : base(name)
+        internal SystemDescriptor2(string name) : base(name)
         {
         }
 

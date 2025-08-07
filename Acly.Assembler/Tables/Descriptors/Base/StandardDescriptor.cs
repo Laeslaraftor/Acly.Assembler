@@ -5,7 +5,7 @@ namespace Acly.Assembler.Tables
     /// <summary>
     /// Базовый класс стандартного дескриптора
     /// </summary>
-    public abstract class StandardDescriptor : Descriptor
+    public abstract class StandardDescriptor : Descriptor2
     {
         /// <summary>
         /// Создать новый экземпляр стандартного дескриптора

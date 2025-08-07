@@ -2,6 +2,7 @@
 using Acly.Assembler.Registers;
 using System.Diagnostics;
 using Acly.Assembler.Interruptions;
+using Acly.Assembler.Tables;
 
 namespace Acly.Assembler.Tests
 {
@@ -115,6 +116,18 @@ namespace Acly.Assembler.Tests
         {
             var operand = MemoryOperand.Create(RealModeContext.Instance.ExtraSegment, 0x1C, null, scale: 4);
             Debug.WriteLine(operand);
+        }
+        [TestMethod]
+        public void AccessByteTest()
+        {
+            DataCodeAccessByte access = new()
+            {
+                DescriptorType = DescriptorType.DataCode,
+                IsExecutable = true,
+                IsReadable = true,
+            };
+            byte asByte = access;
+            Debug.WriteLine(Convert.ToString(asByte, 16));
         }
     }
 }

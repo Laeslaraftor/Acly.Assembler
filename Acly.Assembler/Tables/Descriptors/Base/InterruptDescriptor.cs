@@ -5,7 +5,7 @@ namespace Acly.Assembler.Tables
     /// <summary>
     /// Базовый класс дескриптора прерывания
     /// </summary>
-    public abstract class InterruptDescriptor : Descriptor
+    public abstract class InterruptDescriptor : Descriptor2
     {
         /// <summary>
         /// Создать новый экземпляр дескриптора прерывания

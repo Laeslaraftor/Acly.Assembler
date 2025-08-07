@@ -3,8 +3,12 @@
     /// <summary>
     /// Базовый класс операции с регистрами и адресами
     /// </summary>
-    public abstract class MemoryOperand
+    public abstract class MemoryOperand : ValueContainer
     {
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        public override string Name => Value;
         /// <summary>
         /// Строковое значение операции. Например 0x1000, RAX, [RAX + 2] 
         /// </summary>
@@ -17,6 +21,14 @@
         /// </summary>
         /// <param name="value"><inheritdoc/></param>
         public static implicit operator MemoryOperand(char value)
+        {
+            return Create(value);
+        }
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="value"><inheritdoc/></param>
+        public static implicit operator MemoryOperand(string value)
         {
             return Create(value);
         }
@@ -60,6 +72,14 @@
         {
             return Create(register);
         }
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="operand"><inheritdoc/></param>
+        public static implicit operator Register(MemoryOperand operand)
+        {
+            return new(Size.x64, operand.Value);
+        }
 
         #endregion
 
@@ -88,6 +108,15 @@
             return new CharMemoryOperand(symbol);
         }
         /// <summary>
+        /// Создать операцию с символом
+        /// </summary>
+        /// <param name="label">Название функции</param>
+        /// <returns>Операция с символом</returns>
+        public static MemoryOperand Create(string label)
+        {
+            return new AddressMemoryOperand(label, false);
+        }
+        /// <summary>
         /// Создать операцию
         /// </summary>
         /// <param name="address">Адрес, регистр или строковое значение</param>
@@ -104,10 +133,12 @@
         /// <param name="address">Адрес, регистр или строковое значение</param>
         /// <param name="displacement">Константное смещение</param>
         /// <param name="scale">Масштаб</param>
+        /// <param name="asPointer">Если true, то будет считаться что регистр содержит адрес на значение 
+        /// и он будет обособлен квадратными скобками</param>
         /// <returns>Операция с регистрами и адресами</returns>
-        public static MemoryOperand Create(Address address, int displacement, int scale = 1)
+        public static MemoryOperand Create(Address address, int displacement, int scale = 1, bool asPointer = true)
         {
-            return new AddressMemoryOperand(address, null, displacement, scale, true);
+            return new AddressMemoryOperand(address, null, displacement, scale, asPointer);
         }
         /// <summary>
         /// Создать операцию с регистром
@@ -129,10 +160,12 @@
         /// <param name="index">Смещение</param>
         /// <param name="displacement">Константное смещение</param>
         /// <param name="scale">Масштаб</param>
+        /// <param name="asPointer">Если true, то будет считаться что регистр содержит адрес на значение 
+        /// и он будет обособлен квадратными скобками</param>
         /// <returns>Операция с регистрами и адресами</returns>
-        public static MemoryOperand Create(Address segment, Address address, Address? index = null, int displacement = 0, int scale = 1)
+        public static MemoryOperand Create(Address segment, Address address, Address? index = null, int displacement = 0, int scale = 1, bool asPointer = true)
         {
-            return new AddressMemoryOperand(segment, address, index, displacement, scale, true);
+            return new AddressMemoryOperand(segment, address, index, displacement, scale, asPointer);
         }
 
         #endregion

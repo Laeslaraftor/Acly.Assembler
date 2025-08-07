@@ -23,7 +23,7 @@ namespace Acly.Assembler.Interruptions
         public void SetVideoMode(VideoMode mode)
         {
             RealMode.Accumulator.Lower.Set((byte)mode);
-            PerformInterruption((byte)mode);
+            PerformInterruption(VideoModeSettingFunction);
         }
         /// <summary>
         /// Вывести символ на экран
@@ -49,32 +49,45 @@ namespace Acly.Assembler.Interruptions
         /// Вывести строку на экран
         /// </summary>
         /// <param name="stringAddress">Адрес строки</param>
-        /// <param name="page">Номер страницы</param>
-        /// <param name="color">Цвет текста (только для графического режима)</param>
-        public void PrintString(MemoryOperand stringAddress, MemoryOperand page, MemoryOperand color)
+        public void PrintString(MemoryOperand stringAddress)
         {
-            _printStringCounter++;
-            string printFunctionName = $"print_string_loop{_printStringCounter}";
-            string printFunctionContinueName = $".{printFunctionName}_next";
-            string printFunctionCompleteName = $".{printFunctionName}_done";
+            PrintStringCodeGenerator.AddGenerator();
+
+            //_printStringCounter++;
+            //string printFunctionName = $"print_string_loop{_printStringCounter}";
+            //string printFunctionContinueName = $".{printFunctionName}_next";
+            //string printFunctionCompleteName = $".{printFunctionName}_done";
 
             Asm.Comment($"Вывод строки на экран: {stringAddress}");
             Asm.Context.SourceIndex.Set(stringAddress);
-            Asm.Call(printFunctionName);
+            Asm.Call(PrintStringCodeGenerator.FunctionName);
 
-            Asm.Label(printFunctionName);
-            RealMode.Accumulator.Higher.Set(CharOutputFunction);
-            RealMode.Base.Higher.Xor(RealMode.Base.Higher);
+            //Asm.Label(printFunctionName);
+            //RealMode.Accumulator.Higher.Set(CharOutputFunction);
+            //RealMode.Base.Higher.Xor(RealMode.Base.Higher);
 
-            Asm.Label(printFunctionContinueName);
-            Asm.LoadStringByte();
-            RealMode.Accumulator.Lower.EqualsZero();
-            Asm.JumpIfZero(printFunctionCompleteName);
-            Asm.Interrupt(this);
-            Asm.Jump(printFunctionContinueName);
+            //Asm.Label(printFunctionContinueName);
+            //Asm.LoadStringByte();
+            //RealMode.Accumulator.Lower.EqualsZero();
+            //Asm.JumpIfZero(printFunctionCompleteName);
+            //Asm.Interrupt(this);
+            //Asm.Jump(printFunctionContinueName);
 
-            Asm.Label(printFunctionCompleteName);
+            //Asm.Label(printFunctionCompleteName);
             //Asm.Return();
+        }
+        /// <summary>
+        /// Вывести строку на экран. Этот вариант вывода создаёт очень много исходного кода!
+        /// </summary>
+        /// <param name="text">Текст для вывода на экран</param>
+        /// <param name="page">Номер страницы</param>
+        /// <param name="color">Цвет текста (только для графического режима)</param>
+        public void PrintString(string text, MemoryOperand page, MemoryOperand color)
+        {
+            for (int i = 0; i < text.Length; i++)
+            {
+                PrintChar(text[i], page, color);
+            }
         }
         /// <summary>
         /// Получить позицию курсора на экране
@@ -208,6 +221,64 @@ namespace Acly.Assembler.Interruptions
         #region Статика
 
         private static int _printStringCounter;
+
+        #endregion
+
+        #region Классы
+
+        internal class PrintStringCodeGenerator : ICodeGenerator
+        {
+            public GeneratedCode GenerateCode()
+            {
+                string printFunctionContinueName = $".{FunctionName}_next";
+                string printFunctionCompleteName = $".{FunctionName}_done";
+
+                if (Asm.CurrentMode != Mode.x16)
+                {
+                    Asm.EmptyLine();
+                    Asm.Switch(Mode.x16);
+                }
+
+                Asm.Label(FunctionName);
+                RealMode.Accumulator.Higher.Set(CharOutputFunction);
+                RealMode.Base.Higher.Xor(RealMode.Base.Higher);
+
+                Asm.Label(printFunctionContinueName);
+                Asm.LoadStringByte();
+                RealMode.Accumulator.Lower.EqualsZero();
+                Asm.JumpIfZero(printFunctionCompleteName);
+                Asm.Interrupt(Ints.BIOS.Video);
+                Asm.Jump(printFunctionContinueName);
+
+                Asm.Label(printFunctionCompleteName);
+                Asm.Return();
+
+                return new(Section.Text, string.Empty, Mode.x16);
+            }
+
+            #region Константы
+
+            public const string FunctionName = "print_string_loop";
+
+            #endregion
+
+            #region Статика
+
+            internal static bool IsAdded { get; set; }
+
+            public static void AddGenerator()
+            {
+                if (IsAdded)
+                {
+                    return;
+                }
+
+                IsAdded = true;
+                Asm.Add(new PrintStringCodeGenerator(), true);
+            }
+
+            #endregion
+        }
 
         #endregion
     }

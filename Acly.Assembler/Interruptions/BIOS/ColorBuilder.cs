@@ -45,10 +45,10 @@ namespace Acly.Assembler.Interruptions
             }
 
             return (byte)(
-                (blink << 7) |       // Мигание -> бит 7
+                (blink << 7) |            // Мигание -> бит 7
                 ((byte)Background << 4) | // Цвет фона -> биты 4–6
-                (brightness << 3) |  // Яркость -> бит 3
-                (byte)TextColor              // Цвет текста -> биты 0–2
+                (brightness << 3) |       // Яркость -> бит 3
+                (byte)TextColor           // Цвет текста -> биты 0–2
             );
         }
 

@@ -24,7 +24,7 @@ namespace Acly.Assembler.Tables
         /// </summary>
         public string Name { get; }
 
-        private readonly Dictionary<string, Descriptor> _descriptors = new();
+        private readonly Dictionary<string, Descriptor2> _descriptors = new();
 
         #region Управление
 
@@ -33,7 +33,7 @@ namespace Acly.Assembler.Tables
         /// </summary>
         /// <param name="descriptor">Дескриптор, который надо добавить в таблицу</param>
         /// <exception cref="ArgumentNullException"></exception>
-        protected void AddDescriptor(Descriptor descriptor)
+        protected void AddDescriptor(Descriptor2 descriptor)
         {
             if (descriptor == null)
             {
@@ -48,7 +48,7 @@ namespace Acly.Assembler.Tables
         /// </summary>
         /// <typeparam name="T">Тип дескриптора</typeparam>
         /// <param name="action">Действие для прохода по дескриптору</param>
-        protected void ForEachDescriptors<T>(Action<T> action) where T : Descriptor
+        protected void ForEachDescriptors<T>(Action<T> action) where T : Descriptor2
         {
             foreach (var descriptor in _descriptors.Values)
             {

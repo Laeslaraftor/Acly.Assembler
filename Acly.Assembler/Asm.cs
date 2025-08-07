@@ -1,11 +1,11 @@
 ﻿using Acly.Assembler.Contexts;
 using System.Text;
-using System;
 using Acly.Assembler.Registers;
 using System.Collections.Generic;
 using Acly.Assembler.Interruptions;
 using Acly.Assembler.Tables;
 using Acly.Assembler.Memory;
+using System;
 
 namespace Acly.Assembler
 {
@@ -34,6 +34,33 @@ namespace Acly.Assembler
         /// Завершающее двойное слово
         /// </summary>
         public static ulong? EndingDoubleWord { get; set; }
+        /// <summary>
+        /// Текущая секция кода
+        /// </summary>
+        public static Section? CurrentSection
+        {
+            get
+            {
+                if (Builder == _textBuilder)
+                {
+                    return Assembler.Section.Text;
+                }
+                else if (Builder == _dataBuilder)
+                {
+                    return Assembler.Section.Data;
+                }
+                else if (Builder == _bssBuilder)
+                {
+                    return Assembler.Section.Bss;
+                }
+
+                return null;
+            }
+        }
+        /// <summary>
+        /// Текущий режим работы процессора
+        /// </summary>
+        public static Mode CurrentMode { get; private set; } = Mode.x16;
 
         private static StringBuilder Builder
         {
@@ -50,7 +77,7 @@ namespace Acly.Assembler
         private static readonly StringBuilder _dataBuilder = new();
         private static readonly StringBuilder _bssBuilder = new();
         private static readonly Dictionary<string, VariableBase> _variables = new();
-        private static readonly Dictionary<string, DescriptorTable> _tables = new();
+        private static readonly List<ICodeGenerator> _delayedCodeGenerators = new();
 
         private static PageTableBuilder? _pageTableBuilder;
         private static StringBuilder? _builder;
@@ -103,6 +130,27 @@ namespace Acly.Assembler
         public static void ReturnFar()
         {
             Emit("retfq");
+        }
+        /// <summary>
+        /// iret. Вернуться из прерывания
+        /// </summary>
+        public static void InterruptionReturn()
+        {
+            Emit("iret");
+        }
+        /// <summary>
+        /// iretd. Вернуться из прерывания
+        /// </summary>
+        public static void InterruptionReturnDouble()
+        {
+            Emit("iretd");
+        }
+        /// <summary>
+        /// iretq. Вернуться из прерывания
+        /// </summary>
+        public static void InterruptionReturnQuad()
+        {
+            Emit("iretq");
         }
 
         /// <summary>
@@ -193,6 +241,57 @@ namespace Acly.Assembler
         public static void LoadStringByte()
         {
             Emit("lodsb");
+        }
+
+        /// <summary>
+        /// pusha. Сохранить все регистры в стек
+        /// </summary>
+        public static void PushAll()
+        {
+            Emit("pusha");
+        }
+        /// <summary>
+        /// pushad. Сохранить все регистры в стек
+        /// </summary>
+        public static void PushAllDouble()
+        {
+            Emit("pushad");
+        }
+        /// <summary>
+        /// popa. Восстановить все регистры из стека
+        /// </summary>
+        public static void PopAll()
+        {
+            Emit("popa");
+        }
+        /// <summary>
+        /// popad. Восстановить все регистры из стека
+        /// </summary>
+        public static void PopAllDouble()
+        {
+            Emit("popad");
+        }
+
+        /// <summary>
+        /// rep stosd. Записать данные из AX в видеопамять CX количества раз
+        /// </summary>
+        public static void RepeatStoreByte()
+        {
+            Emit("rep stosb");
+        }
+        /// <summary>
+        /// rep stosw. Записать данные из AX в видеопамять CX количества раз
+        /// </summary>
+        public static void RepeatStoreWord()
+        {
+            Emit("rep stosw"); 
+        }
+        /// <summary>
+        /// rep stosd. Записать данные из AX в видеопамять CX количества раз
+        /// </summary>
+        public static void RepeatStoreDoubleWord()
+        {
+            Emit("rep stosd");
         }
 
         #endregion
@@ -459,58 +558,12 @@ namespace Acly.Assembler
         }
 
         /// <summary>
-        /// Создать глобальную таблицу дескрипторов (GDT).
-        /// Эта таблица может быть только в единственном экземпляре!
-        /// </summary>
-        /// <param name="name">Название таблицы</param>
-        /// <returns>Новая глобальная таблица дескрипторов (GDT)</returns>
-        public static GlobalDescriptorTable CreateGlobalDescriptorTable(string name)
-        {
-            foreach (var createdTable in _tables.Values)
-            {
-                if (createdTable is GlobalDescriptorTable)
-                {
-                    throw new AssemblerException("Глобальная таблица дескрипторов (GDT) может быть только в единственном экземпляре!");
-                }
-            }
-
-            GlobalDescriptorTable table = new(name);
-            _tables.Add(name, table);
-
-            return table;
-        }
-        /// <summary>
-        /// Создать локальную таблицу дескрипторов (LDT)
-        /// </summary>
-        /// <param name="name">Название таблицы</param>
-        /// <returns>Новая глобальная таблица дескрипторов (GDT)</returns>
-        public static LocalDescriptorTable CreateLocalDescriptorTable(string name)
-        {
-            LocalDescriptorTable table = new(name);
-            _tables.Add(name, table);
-
-            return table;
-        }
-        /// <summary>
-        /// Создать таблицу дескрипторов прерывания (IDT)
-        /// </summary>
-        /// <param name="name">Название таблицы</param>
-        /// <returns>Новая глобальная таблица дескрипторов (GDT)</returns>
-        public static InterruptDescriptorTable CreateInterruptionDescriptorTable(string name)
-        {
-            InterruptDescriptorTable table = new(name);
-            _tables.Add(name, table);
-
-            return table;
-        }
-
-        /// <summary>
         /// lgdt. Загрузить глобальную таблицу дескрипторов (GDT).
         /// </summary>
-        /// <param name="table">Таблица, которую необходимо загрузить</param>
-        public static void LoadGlobalDescriptorTable(GlobalDescriptorTable table)
+        /// <param name="gdt">Глобальная таблица дескрипторов, которую необходимо загрузить</param>
+        public static void LoadGlobalDescriptorTable(GDT gdt)
         {
-            DescriptorTableCommand("lgdt", table);
+            Emit($"lgdt [{gdt.CodeName}]");
         }
         /// <summary>
         /// lldt. Загрузить локальную таблицу дескрипторов (LDT).
@@ -528,6 +581,25 @@ namespace Acly.Assembler
         public static void LoadInterruptionDescriptorTable(InterruptDescriptorTable table)
         {
             DescriptorTableCommand("lidt", table);
+        }
+        /// <summary>
+        /// lidt. Загрузить таблицу прерываний (IDT).
+        /// </summary>
+        /// <param name="idt">Таблица, которую необходимо загрузить</param>
+        public static void LoadInterruptionDescriptorTable(IDT idt)
+        {
+            int count = 0;
+
+            foreach (var section in idt.Sections)
+            {
+                for (int i = 0; i < Math.Max(section.RepeatCount, 1); i++)
+                {
+                    section.SetupHandler(idt, count * 8);
+                    count++;
+                }
+            }
+
+            Emit($"lidt [{idt.CodeName}]");
         }
 
         /// <summary>
@@ -571,10 +643,17 @@ namespace Acly.Assembler
         /// Начать код со стандартной точки входа _start с указанным режимом процессора
         /// </summary>
         /// <param name="mode">Начальный режим процессора</param>
+        /// <param name="origin">Указание на то, куда разместить следующий фрагмент кода</param>
         /// <returns>Название функции точки входа</returns>
-        public static string StartWithMode(Mode mode)
+        public static string StartWithMode(Mode mode, uint? origin = null)
         {
             Switch(mode);
+
+            if (origin != null)
+            {
+                Origin(origin.Value);
+            }
+
             Section(Assembler.Section.Text);
             SetGlobal(StartLabel);
             Label(StartLabel);
@@ -601,7 +680,8 @@ namespace Acly.Assembler
         /// <param name="cpuMode">Новый режим работы процессора</param>
         public static void Switch(Mode cpuMode)
         {
-            Emit($"[BITS {(int)cpuMode}]");
+            CurrentMode = cpuMode;
+            Emit($"[BITS {(int)cpuMode}]", false);
             _currentContext = CpuModeContext.GetContext(cpuMode);
         }
         /// <summary>
@@ -630,6 +710,31 @@ namespace Acly.Assembler
             {
                 Builder = _bssBuilder;
             }
+        }
+
+        /// <summary>
+        /// Подключить файл
+        /// </summary>
+        /// <param name="fileName">Путь к файлу</param>
+        public static void Include(string fileName)
+        {
+            Emit($"%include \"{fileName}\"");
+        }
+
+        /// <summary>
+        /// Начать повторение. Этот кусок кода будет повторяться при компиляции заданное количество раз.
+        /// </summary>
+        /// <param name="count">Количество раз, которое надо повторить следующий кусок кода</param>
+        public static void StartRepeat(long count)
+        {
+            Emit($"%rep {count}", true);
+        }
+        /// <summary>
+        /// Заверить повторение кода
+        /// </summary>
+        public static void EndRepeat()
+        {
+            Emit("endrep", true);
         }
 
         internal static void Emit(string line)
@@ -678,9 +783,29 @@ namespace Acly.Assembler
         /// Если true - то переменная будет находится в <see cref="Section.Data"/>, 
         /// иначе в <see cref="Section.Bss"/></param>
         /// <returns>Переменная</returns>
-        public static StringVariable CreateStringVariable(string name, Size size, bool isReserved = true)
+        public static StringVariable CreateStringVariable(string name, Size size = Size.x16, bool isReserved = true)
         {
             StringVariable result = new(size, name, isReserved);
+            _variables.Add(name, result);
+
+            return result;
+        }
+        /// <summary>
+        /// Создать строковую переменную
+        /// </summary>
+        /// <param name="name">Название переменной. Название должно быть уникальное, чтобы не было повторений</param>
+        /// <param name="value">Значение переменной</param>
+        /// <param name="size">Размер переменной. Принимаются только x16, x32, x64</param>
+        /// <param name="isReserved">Является ли переменная зарезервированной.
+        /// Если true - то переменная будет находится в <see cref="Section.Data"/>, 
+        /// иначе в <see cref="Section.Bss"/></param>
+        /// <returns>Переменная</returns>
+        public static StringVariable CreateStringVariable(string name, string value, Size size = Size.x16, bool isReserved = true)
+        {
+            StringVariable result = new(size, name, isReserved)
+            {
+                Value = value
+            };
             _variables.Add(name, result);
 
             return result;
@@ -732,6 +857,74 @@ namespace Acly.Assembler
         #region Управление
 
         /// <summary>
+        /// Добавить код из генератора кода
+        /// </summary>
+        /// <param name="codeGenerator">Генератор кода, который сгенерирует код для вставки</param>
+        public static void Add(ICodeGenerator codeGenerator)
+        {
+            Add(codeGenerator, false);
+        }
+        /// <summary>
+        /// Добавить код из генератора кода
+        /// </summary>
+        /// <param name="codeGenerator">Генератор кода, который сгенерирует код для вставки</param>
+        /// <param name="delayed">
+        /// Если true, то код будет добавлен в только в моменте получения исходного кода.
+        /// Может пригодится когда надо добавить код независимо от текущей позиции
+        /// </param>
+        public static void Add(ICodeGenerator codeGenerator, bool delayed)
+        {
+            if (delayed)
+            {
+                _delayedCodeGenerators.Add(codeGenerator);
+                return;
+            }
+
+            var startSection = CurrentSection;
+            var code = codeGenerator.GenerateCode();
+
+            if (code.Code == string.Empty)
+            {
+                return;
+            }
+
+            Section(code.Section);
+
+            if (code.Section == Assembler.Section.Text && CurrentMode != code.Mode)
+            {
+                Switch(code.Mode);
+            }
+
+            Emit(code.Code, false);
+
+            if (startSection != null)
+            {
+                Section(startSection.Value);
+            }
+        }
+
+        /// <summary>
+        /// Сбросить все изменения
+        /// </summary>
+        public static void Reset()
+        {
+            EndingTimes = null;
+            EndingDoubleWord = null;
+
+            BiosVideoInterruption.PrintStringCodeGenerator.IsAdded = false;
+            _pageTableBuilder = null;
+            _currentContext = null;
+            _builder = null;
+
+            _delayedCodeGenerators.Clear();
+            _beginningBuilder.Clear();
+            _textBuilder.Clear();
+            _dataBuilder.Clear();
+            _bssBuilder.Clear();
+            _variables.Clear();
+        }
+
+        /// <summary>
         /// Получить составленный ассемблерный код
         /// </summary>
         /// <returns>Составленный код</returns>
@@ -740,7 +933,17 @@ namespace Acly.Assembler
             StringBuilder result = new();
             result.Append(_beginningBuilder.ToString());
 
+            foreach (var delayedCodeGenerator in _delayedCodeGenerators)
+            {
+                Add(delayedCodeGenerator);
+            }
+
             AppendSection(result, Assembler.Section.Text, _textBuilder.ToString());
+            
+            if (_dataBuilder.Length > 0)
+            {
+                AppendSection(result, Assembler.Section.Data, _dataBuilder.ToString());
+            }
 
             var dataVariables = GetVariables(true);
             var bssVariables = GetVariables(false);
@@ -751,22 +954,22 @@ namespace Acly.Assembler
                 result.AppendLine(dataVariables.TrimEnd());
             }
 
-            if (_tables.Count > 0 || _pageTableBuilder != null)
-            {
-                AppendSection(result, Assembler.Section.Data, null);
+            //if (_tables.Count > 0 || _pageTableBuilder != null)
+            //{
+            //    AppendSection(result, Assembler.Section.Data, null);
                 
-                if (_tables.Count > 0)
-                {
-                    foreach (var table in _tables.Values)
-                    {
-                        result.AppendLine(table.ToAssembler());
-                    }
-                }
-                if (_pageTableBuilder != null)
-                {
-                    result.AppendLine(_pageTableBuilder.GenerateAssemblerCode());
-                }
-            }
+            //    if (_tables.Count > 0)
+            //    {
+            //        foreach (var table in _tables.Values)
+            //        {
+            //            result.AppendLine(table.ToAssembler());
+            //        }
+            //    }
+            //    if (_pageTableBuilder != null)
+            //    {
+            //        result.AppendLine(_pageTableBuilder.GenerateAssemblerCode());
+            //    }
+            //}
             if (bssVariables != null)
             {
                 AppendSection(result, Assembler.Section.Bss, bssVariables);
@@ -820,7 +1023,7 @@ namespace Acly.Assembler
 
         #region Константы
 
-        private const string Tab = "    ";
+        internal const string Tab = "    ";
         private const string StartLabel = "_start";
 
         #endregion

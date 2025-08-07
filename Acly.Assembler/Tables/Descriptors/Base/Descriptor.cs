@@ -7,14 +7,14 @@ namespace Acly.Assembler.Tables
     /// Базовый класс дескриптора. 
     /// Дескриптор - это некие "метаданные" данных/кода
     /// </summary>
-    public abstract class Descriptor
+    public abstract class Descriptor2
     {
         /// <summary>
         /// Создать экземпляр дескриптора
         /// </summary>
         /// <param name="name">Название дескриптора</param>
         /// <exception cref="ArgumentNullException"></exception>
-        protected Descriptor(string name)
+        protected Descriptor2(string name)
         {
             if (name == null)
             {

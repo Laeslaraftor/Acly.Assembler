@@ -11,7 +11,7 @@ namespace Acly.Assembler.Registers
         /// Создать адрес из регистра
         /// </summary>
         /// <param name="register"></param>
-        public Address(Register register)
+        public Address(ValueContainer register)
         {
             Value = register.Name;
         }
@@ -66,7 +66,7 @@ namespace Acly.Assembler.Registers
         /// <inheritdoc/>
         /// </summary>
         /// <param name="register"><inheritdoc/></param>
-        public static implicit operator Address(Register register)
+        public static implicit operator Address(ValueContainer register)
         {
             return new(register);
         }

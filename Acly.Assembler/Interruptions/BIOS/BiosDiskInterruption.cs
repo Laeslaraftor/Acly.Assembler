@@ -58,7 +58,7 @@ namespace Acly.Assembler.Interruptions
         /// <remarks>CF = 0 (успех), CF = 1 (ошибка), AH = код ошибки, AL = количество прочитанных секторов</remarks>
         public void ReadSectors(DiskType diskType, MemoryOperand amountOfSectors, MemoryOperand bufferAddress)
         {
-            ReadSectors(diskType, amountOfSectors, 0, 1, 0, bufferAddress);
+            ReadSectors(diskType, amountOfSectors, 0, 2, 0, bufferAddress);
         }
         /// <summary>
         /// Записать данные в сектора

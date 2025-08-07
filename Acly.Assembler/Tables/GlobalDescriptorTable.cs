@@ -20,9 +20,9 @@
         /// </summary>
         /// <param name="name">Название нового дескриптора</param>
         /// <returns>Новый системный дескриптор</returns>
-        public SystemDescriptor CreateSystemDescriptor(string name)
+        public SystemDescriptor2 CreateSystemDescriptor(string name)
         {
-            SystemDescriptor result = new(name);
+            SystemDescriptor2 result = new(name);
             AddDescriptor(result);
 
             return result;

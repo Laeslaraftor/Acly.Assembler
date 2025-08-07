@@ -15,7 +15,7 @@ namespace Acly.Assembler.Demos.Bootloader16
         private readonly static ColorBuilder _lightColor = new()
         {
             Background = BiosColor.Black,
-            TextColor = BiosColor.LightBlue,
+            TextColor = BiosColor.LightBlue
         };
 
         public static async Task Create(string filePath)
@@ -35,21 +35,20 @@ namespace Acly.Assembler.Demos.Bootloader16
             Asm.Comment("Функция вывода сообщения по центру экрана.");
             Ints.BIOS.Video.ClearScreen(RealModeContext.Instance.Data.Higher);
             Ints.BIOS.Video.SetCursorPosition(0, 11, 39 - message.Value.Length / 2);
-            Ints.BIOS.Video.PrintString(message, 0, 0);
+            Ints.BIOS.Video.PrintString(message);
+            Ints.BIOS.SystemFunctions.Delay(5);
             Asm.Return();
 
             Asm.Label(PrintDarkMessageLabel);
             Asm.Comment("Функция вывода сообщения с обычным цветом");
             RealModeContext.Instance.Data.Higher.Set(_color);
             Asm.Call(PrintMessageLabel);
-            Ints.BIOS.SystemFunctions.Delay(10);
             Asm.Jump(PrintLightMessageLabel);
 
             Asm.Label(PrintLightMessageLabel);
             Asm.Comment("Функция вывода сообщения со светлым цветом");
             RealModeContext.Instance.Data.Higher.Set(_lightColor);
             Asm.Call(PrintMessageLabel);
-            Ints.BIOS.SystemFunctions.Delay(10);
             Asm.Jump(PrintDarkMessageLabel);
 
 

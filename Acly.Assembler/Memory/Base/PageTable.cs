@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace Acly.Assembler.Memory
 {
@@ -30,7 +31,15 @@ namespace Acly.Assembler.Memory
         public void MapEntry(int index, ulong targetAddress, PageTableFlags flags,
                             Func<ulong, string, PageTableFlags, PageTableEntry> entryFactory)
         {
-            this[index] = entryFactory(targetAddress, $"{Name}_entry{index}", flags);
+            var entry = entryFactory(targetAddress, $"{Name}_entry{index}", flags);
+
+            if (index >= Count)
+            {
+                Add(entry);
+                return;
+            }
+
+            this[index] = entry;
         }
 
         /// <summary>
