@@ -107,7 +107,8 @@ namespace Acly.Assembler.Interruptions
                 public GeneratedCode GenerateCode()
                 {
                     var startMode = Asm.CurrentMode;
-                    string exceptionName = _exception.ToString();
+                    string exceptionName = _exception.GetInfo();
+                    var exceptionVariable = Asm.CreateStringVariable($"exception_{_exception}_message", exceptionName);
 
                     if (startMode != Mode.x32)
                     {
@@ -116,14 +117,9 @@ namespace Acly.Assembler.Interruptions
 
                     Asm.Label(_handlerName);
                     VideoMemory.Fill(0xCC20, 160 * 50);
-                    VideoMemory.PrintString(exceptionName, (byte)(39 - exceptionName.Length / 2), 11, 160, _color);
+                    VideoMemory.PrintString(exceptionVariable, (byte)(39 - exceptionName.Length / 2), 11, 80, _color);
                     Asm.Halt();
                     Asm.InterruptionReturnDouble();
-
-                    if (startMode != Mode.x32)
-                    {
-                        Asm.Switch(Mode.x32);
-                    }
 
                     return new(Section.Text, string.Empty, Mode.x32);
                 }

@@ -118,7 +118,7 @@ namespace Acly.Assembler.Registers
         }
         /// <summary>
         /// Разделить без знака на значение. 
-        /// Это действие разделит регистры <see cref="CpuModeContext.Accumulator"/> и <see cref="CpuModeContext.Data"/> на текущее значение
+        /// Это действие разделит регистр <see cref="CpuModeContext.Accumulator"/> и запишет результат <see cref="CpuModeContext.Accumulator"/>, а остаток в <see cref="CpuModeContext.Data"/>
         /// </summary>
         public virtual void Divide()
         {

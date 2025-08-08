@@ -1,4 +1,5 @@
 ﻿using Acly.Assembler.Registers;
+using System;
 
 namespace Acly.Assembler.Interruptions
 {
@@ -50,6 +51,15 @@ namespace Acly.Assembler.Interruptions
                 (brightness << 3) |       // Яркость -> бит 3
                 (byte)TextColor           // Цвет текста -> биты 0–2
             );
+        }
+        /// <summary>
+        /// Получить значение цвета VGA
+        /// </summary>
+        /// <returns>Цвет VGA</returns>
+        public byte ToVgaValue()
+        {
+            string binary = Convert.ToString((byte)Background, 16) + Convert.ToString((byte)TextColor, 16);
+            return Convert.ToByte(binary, 16);
         }
 
         #endregion

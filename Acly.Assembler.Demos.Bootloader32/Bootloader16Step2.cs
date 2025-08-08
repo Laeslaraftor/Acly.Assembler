@@ -17,6 +17,7 @@ namespace Acly.Assembler.Demos.Bootloader32
 
             var loadingGdtText = Asm.CreateStringVariable("loading_gdt_message", "Loading GDT");
             var enablingProtectionText = Asm.CreateStringVariable("enabling_protection_message", "Enabling protection");
+            var successText = Asm.CreateStringVariable("success_message", "Success! Burger King vs KFC vs Rulem life vs zeWhite");
 
             Ints.BIOS.Video.ClearScreen(_color);
             Ints.BIOS.Video.SetCursorPosition(0, 0, 0);
@@ -49,7 +50,7 @@ namespace Acly.Assembler.Demos.Bootloader32
 
             Asm.EmptyLine();
             Asm.Comment("Заполнение экрана белым цветом");
-            VideoMemory.Fill(0xF020, 160 * 50);
+            VideoMemory.Fill(80 * 50, _successColor);
             Asm.Comment("Установка курсора на начальную позицию [0, 0]");
             VideoMemory.SetCursorPosition(0, 0, 160);
 
@@ -59,9 +60,32 @@ namespace Acly.Assembler.Demos.Bootloader32
             //Asm.Context.Accumulator.Divide();
 
             Asm.EmptyLine();
-            VideoMemory.PrintString("Success", 0, 0, 160, _successColor);
+            VideoMemory.PrintString(successText, 0, _successColor);
             Asm.DisableInterruptions();
             Asm.Halt();
+
+            Asm.Label(ExceptionHandlerLabel);
+            Asm.Comment("Обработчик исключения");
+            VideoMemory.Fill(80 * 50, _errorColor);
+            Asm.Call(StringLengthLabel);
+            Asm.Context.Accumulator.Set(Asm.Context.Count);
+            Asm.Context.Data.Set(0);
+            Asm.Context.Base.Set(2);
+            Asm.Context.Base.Divide();
+            Asm.Context.Count.Set(Asm.Context.Accumulator);
+            Asm.Context.Count.Add(11 * 80 + 1);
+            VideoMemory.PrintString(Asm.Context.SourceIndex, Asm.Context.Count, _errorColor);
+            Asm.Halt();
+
+            Asm.Label(StringLengthLabel);
+            Asm.Comment("Функция подсчёта длины строки");
+            Asm.Context.Count.Xor(Asm.Context.Count);
+            Asm.Context.Count.Decrement();
+            Asm.Label(StringLengthCountLabel);
+            Asm.Context.Count.Increment();
+            MemoryOperand.Create(Asm.Context.SourceIndex, Asm.Context.Count, 0, 1).Compare(Prefix.Byte, false, 0);
+            Asm.JumpIfNotEquals(StringLengthCountLabel);
+            Asm.Return();
 
             await File.WriteAllTextAsync(filePath, Asm.GetAssembly());
         }
@@ -110,11 +134,15 @@ namespace Acly.Assembler.Demos.Bootloader32
         private static void CreateIDT()
         {
             IDT idt = new();
+            ExceptionsHandler handler = new()
+            {
+                ExitEntryPoint = ExceptionHandlerLabel,
+            };
             ExceptionsHandlerBuilder exceptionsHandlerBuilder = new()
             {
                 SegmentSelector = 0x8,
                 Type = InterruptionType.x32_64Interrupt,
-                Handler = ExceptionsHandlerBuilder.StandardHandler.Instance
+                Handler = handler
             };
 
             exceptionsHandlerBuilder.Build(idt);
@@ -122,8 +150,11 @@ namespace Acly.Assembler.Demos.Bootloader32
             Asm.Add(idt);
             Asm.LoadInterruptionDescriptorTable(idt);
         }
-        
+
+        private const string ExceptionHandlerLabel = "cpu_exception_handler";
         private const string ProtectedModeLabel = "protected_mode";
+        private const string StringLengthLabel = "strlen";
+        private const string StringLengthCountLabel = ".strlen_count";
         private static readonly ColorBuilder _color = new()
         {
             Background = BiosColor.Black,
@@ -133,6 +164,11 @@ namespace Acly.Assembler.Demos.Bootloader32
         {
             Background = BiosColor.White,
             TextColor = BiosColor.Black
+        };
+        private static readonly ColorBuilder _errorColor = new()
+        {
+            Background = BiosColor.LightRed,
+            TextColor = BiosColor.White
         };
     }
 }
