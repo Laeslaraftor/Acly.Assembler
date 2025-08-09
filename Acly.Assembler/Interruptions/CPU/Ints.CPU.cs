@@ -94,6 +94,10 @@
             /// Ошибка виртуализации (например, некорректная операция в гостевой системе).
             /// </summary>
             public static SimpleInterruption VirtualizationException { get; } = new(20);
+            /// <summary>
+            /// Прерывание аппаратного таймера (PIT)
+            /// </summary>
+            public static CpuPitInterruption PIT { get; } = new();
         }
     }
 }

@@ -7,40 +7,77 @@ namespace Acly.Assembler.Demos.Bootloader32
     public class ExceptionsHandler : IExceptionHandler
     {
         public MemoryOperand ExitEntryPoint { get; set; } = 0;
+        public MemoryOperand PitHandlerPointer { get; set; } = 0;
         public string HandlerName { get; set; } = "exception_handler";
 
-        private readonly Dictionary<CpuException, HandlerCodeGenerator> _codeGenerators = [];
+        private readonly Dictionary<CpuInterruption, Handler> _codeGenerators = [];
+        private Handler? _reservedHandlerGenerator;
 
-        public MemoryOperand Handle(CpuException exception)
+        public MemoryOperand Handle(CpuInterruption interruption)
         {
-            if (_codeGenerators.TryGetValue(exception, out var generator))
+            Handler? generator = null;
+            bool isReserved = interruption.IsReserved();
+
+            if (isReserved && _reservedHandlerGenerator != null)
             {
-                return generator.HandlerName;
+                return _reservedHandlerGenerator.HandlerName;
+            }
+            else
+            {
+                if (_codeGenerators.TryGetValue(interruption, out generator))
+                {
+                    return generator.HandlerName;
+                }
             }
 
-            string handlerName = $"{HandlerName}_{exception}";
-            generator = new()
-            {
-                ExitEntryPoint = ExitEntryPoint,
-                HandlerName = handlerName,
-                ErrorMessageVariable = Asm.CreateStringVariable($"{handlerName}_message", exception.GetInfo())
-            };
+            string handlerName = $"{HandlerName}_{interruption}";
 
-            _codeGenerators.Add(exception, generator);
+            if (interruption == CpuInterruption.PIT)
+            {
+                generator = new PitHandlerCodeGenerator()
+                {
+                    HandlerPointer = PitHandlerPointer
+                };
+            }
+            else
+            {
+                generator = new HandlerCodeGenerator()
+                {
+                    ExitEntryPoint = ExitEntryPoint,
+                    ErrorMessageVariable = Asm.CreateStringVariable($"{handlerName}_message", interruption.GetInfo())
+                };
+            }
+
+            generator.HandlerName = handlerName;
+
+            if (isReserved)
+            {
+                _reservedHandlerGenerator = generator;
+            }
+            else
+            {
+                _codeGenerators.Add(interruption, generator);
+            }
+                
             Asm.Add(generator, true);
 
-            return generator.HandlerName;
+            return handlerName;
         }
 
         #region Классы
 
-        private class HandlerCodeGenerator : ICodeGenerator
+        private abstract class Handler : ICodeGenerator
+        {
+            public string HandlerName { get; set; } = string.Empty;
+
+            public abstract GeneratedCode GenerateCode();
+        }
+        private class HandlerCodeGenerator : Handler
         {
             public MemoryOperand ExitEntryPoint { get; set; } = 0;
-            public string HandlerName { get; set; } = string.Empty;
             public StringVariable? ErrorMessageVariable { get; set; }
 
-            public GeneratedCode GenerateCode()
+            public override GeneratedCode GenerateCode()
             {
                 var startMode = Asm.CurrentMode;
 
@@ -60,6 +97,33 @@ namespace Acly.Assembler.Demos.Bootloader32
                 Asm.InterruptionReturn();
 
                 return new(Section.Text, string.Empty, Mode.x32);
+            }
+        }
+        private class PitHandlerCodeGenerator : Handler
+        {
+            public MemoryOperand HandlerPointer { get; set; } = 0;
+
+            public override GeneratedCode GenerateCode()
+            {
+                var startMode = Asm.CurrentMode;
+
+                Asm.Label(HandlerName);
+
+                Asm.PushAll();
+
+                Asm.EmptyLine();
+                Asm.Call(HandlerPointer);
+                Asm.EmptyLine();
+
+                Asm.Comment("Сброс сигнала на PIC");
+                Ints.CPU.PIT.Reset();
+                Asm.EmptyLine();
+
+                Asm.PopAll();
+
+                Asm.InterruptionReturnAuto();
+
+                return new(Section.Text, string.Empty, startMode);
             }
         }
 

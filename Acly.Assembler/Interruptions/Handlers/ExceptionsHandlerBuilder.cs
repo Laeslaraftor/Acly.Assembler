@@ -36,9 +36,9 @@ namespace Acly.Assembler.Interruptions
                 throw new InvalidOperationException("Невозможно построить обработчики исключений, так как обработчик не указан");
             }
 
-            foreach (var exception in Enum.GetValues(typeof(CpuException)))
+            foreach (var exception in Enum.GetValues(typeof(CpuInterruption)))
             {
-                var e = (CpuException)exception;
+                var e = (CpuInterruption)exception;
                 var handler = Handler.Handle(e);
 
                 InterruptionDescriptor descriptor = new()
@@ -67,7 +67,7 @@ namespace Acly.Assembler.Interruptions
             /// </summary>
             /// <param name="exception"><inheritdoc/></param>
             /// <returns><inheritdoc/></returns>
-            public MemoryOperand Handle(CpuException exception)
+            public MemoryOperand Handle(CpuInterruption exception)
             {
                 string handlerName = $"{exception}_handler";
 
@@ -95,13 +95,13 @@ namespace Acly.Assembler.Interruptions
 
             private class HandlerGenerator : ICodeGenerator
             {
-                public HandlerGenerator(CpuException exception, string handlerName)
+                public HandlerGenerator(CpuInterruption exception, string handlerName)
                 {
                     _exception = exception;
                     _handlerName = handlerName;
                 }
 
-                private readonly CpuException _exception;
+                private readonly CpuInterruption _exception;
                 private readonly string _handlerName;
 
                 public GeneratedCode GenerateCode()

@@ -132,6 +132,26 @@ namespace Acly.Assembler
             Emit("retfq");
         }
         /// <summary>
+        /// Поставить оператор возврата из прерывания в зависимости от текущего режима
+        /// </summary>
+        public static void InterruptionReturnAuto()
+        {
+            var mode = CurrentMode;
+
+            if (mode == Mode.x64)
+            {
+                InterruptionReturnQuad();
+                return;
+            }
+            else if (mode == Mode.x32)
+            {
+                InterruptionReturnDouble();
+                return;
+            }
+
+            InterruptionReturn();
+        }
+        /// <summary>
         /// iret. Вернуться из прерывания
         /// </summary>
         public static void InterruptionReturn()

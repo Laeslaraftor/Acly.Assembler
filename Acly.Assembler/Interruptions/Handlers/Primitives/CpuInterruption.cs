@@ -3,7 +3,7 @@
     /// <summary>
     /// Исключения, ошибки и прерывания процессора
     /// </summary>
-    public enum CpuException
+    public enum CpuInterruption
     {
         /// <summary>
         /// Деление на ноль или переполнение при DIV/IDIV
@@ -83,6 +83,7 @@
         /// <summary>
         /// Не используется
         /// </summary>
+        [CpuReserved]
         Reserved,
         /// <summary>
         /// Ошибка FPU (деление на 0, переполнение и т.д.)
@@ -112,6 +113,62 @@
         /// <summary>
         /// Зарезервировано для будущих процессоров
         /// </summary>
-        Reserved2
+        [CpuReserved]
+        Reserved2,
+        /// <summary>
+        /// Зарезервировано для будущих процессоров
+        /// </summary>
+        [CpuReserved]
+        Reserved3,
+        /// <summary>
+        /// Зарезервировано для будущих процессоров
+        /// </summary>
+        [CpuReserved]
+        Reserved4,
+        /// <summary>
+        /// Зарезервировано для будущих процессоров
+        /// </summary>
+        [CpuReserved]
+        Reserved5,
+        /// <summary>
+        /// Зарезервировано для будущих процессоров
+        /// </summary>
+        [CpuReserved]
+        Reserved6,
+        /// <summary>
+        /// Зарезервировано для будущих процессоров
+        /// </summary>
+        [CpuReserved]
+        Reserved7,
+        /// <summary>
+        /// Зарезервировано для будущих процессоров
+        /// </summary>
+        [CpuReserved]
+        Reserved8,
+        /// <summary>
+        /// Зарезервировано для будущих процессоров
+        /// </summary>
+        [CpuReserved]
+        Reserved9,
+        /// <summary>
+        /// Зарезервировано для будущих процессоров
+        /// </summary>
+        [CpuReserved]
+        Reserved10,
+        /// <summary>
+        /// Зарезервировано для будущих процессоров
+        /// </summary>
+        [CpuReserved]
+        Reserved11,
+        /// <summary>
+        /// Зарезервировано для будущих процессоров
+        /// </summary>
+        [CpuReserved]
+        Reserved12,
+        /// <summary>
+        /// Прерывание аппаратного таймера (PIT)
+        /// </summary>
+        [CpuInterrupt]
+        PIT,
     }
 }

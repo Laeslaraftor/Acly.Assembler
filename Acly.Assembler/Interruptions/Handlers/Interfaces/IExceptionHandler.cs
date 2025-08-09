@@ -12,6 +12,6 @@ namespace Acly.Assembler.Interruptions
         /// </summary>
         /// <param name="exception">Обрабатываемое исключение</param>
         /// <returns>Адрес обработчика</returns>
-        public MemoryOperand Handle(CpuException exception);
+        public MemoryOperand Handle(CpuInterruption exception);
     }
 }

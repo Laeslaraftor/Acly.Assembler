@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Acly.Assembler.Interruptions
 {
@@ -9,17 +10,35 @@ namespace Acly.Assembler.Interruptions
     public static class ExceptionsHandlersExtensions
     {
         /// <summary>
-        /// Получить информацию об исключении в виде строки.
+        /// Проверить является ли прерывание зарезервированным
+        /// </summary>
+        /// <param name="interruption">Прерывание, которое надо проверить</param>
+        /// <returns>Является ли прерывание зарезервированным</returns>
+        public static bool IsReserved(this CpuInterruption interruption)
+        {
+            var enumType = typeof(CpuInterruption);
+            var enumMembers = typeof(CpuInterruption).GetMember(interruption.ToString());
+            var enumValue = enumMembers.First(member => member.DeclaringType == enumType);
+
+            if (enumValue != null)
+            {
+                return enumValue.GetCustomAttribute<CpuReservedAttribute>() != null;
+            }
+
+            return false;
+        }
+        /// <summary>
+        /// Получить информацию об прерывании в виде строки.
         /// Строка включает название исключения и его типы
         /// </summary>
-        /// <param name="exception">Исключение, информацию о котором надо получить</param>
+        /// <param name="interruption">Прерывание, информацию о котором надо получить</param>
         /// <returns>Информация об исключении</returns>
-        public static string GetInfo(this CpuException exception)
+        public static string GetInfo(this CpuInterruption interruption)
         {
-            string result = $"Exception: {exception}";
+            string result = $"Stopped by {interruption}";
             List<string> types = new();
-            var enumType = typeof(CpuException);
-            var enumMembers = typeof(CpuException).GetMember(exception.ToString());
+            var enumType = typeof(CpuInterruption);
+            var enumMembers = typeof(CpuInterruption).GetMember(interruption.ToString());
             var enumValue = enumMembers.First(member => member.DeclaringType == enumType);
 
             if (enumValue == null)
@@ -44,6 +63,10 @@ namespace Acly.Assembler.Interruptions
                 else if (attribute is CpuAbortAttribute)
                 {
                     types.Add("Abort");
+                }
+                else if (attribute is CpuReservedAttribute)
+                {
+                    types.Add("Reserved");
                 }
             }
 

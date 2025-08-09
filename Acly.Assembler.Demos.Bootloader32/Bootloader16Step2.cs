@@ -15,18 +15,28 @@ namespace Acly.Assembler.Demos.Bootloader32
             Asm.StartWithMode(Mode.x16, 0x1000);
             Asm.DisableInterruptions();
 
+            var settingUpPicText = Asm.CreateStringVariable("setting_up_pic_message", "Start setting up PIC");
             var loadingGdtText = Asm.CreateStringVariable("loading_gdt_message", "Loading GDT");
             var enablingProtectionText = Asm.CreateStringVariable("enabling_protection_message", "Enabling protection");
             var successText = Asm.CreateStringVariable("success_message", "Success! Burger King vs KFC vs Rulem life vs zeWhite");
+            var pit1Text = Asm.CreateStringVariable("pit1_message", "PIT 1");
+            var pit2Text = Asm.CreateStringVariable("pit2_message", "PIT 2");
 
             Ints.BIOS.Video.ClearScreen(_color);
             Ints.BIOS.Video.SetCursorPosition(0, 0, 0);
+            Ints.BIOS.Video.PrintString(settingUpPicText);
+
+            Ints.CPU.PIT.Initialize(50);
+            Ints.CPU.PIT.Remap();
+
+            Asm.EmptyLine();
+            Ints.BIOS.Video.SetCursorPosition(0, 1, 0);
             Ints.BIOS.Video.PrintString(loadingGdtText);
 
             CreateGDT();
             Asm.EmptyLine();
 
-            Ints.BIOS.Video.SetCursorPosition(0, 1, 0);
+            Ints.BIOS.Video.SetCursorPosition(0, 2, 0);
             Ints.BIOS.Video.PrintString(enablingProtectionText);
 
             ProtectedModeContext.EnableProtectedMode();
@@ -54,6 +64,7 @@ namespace Acly.Assembler.Demos.Bootloader32
             Asm.Comment("Установка курсора на начальную позицию [0, 0]");
             VideoMemory.SetCursorPosition(0, 0, 160);
 
+            Asm.EnableInterruptions();
             //Asm.EmptyLine();
             //Asm.Comment("Исключение деления на 0");
             //Asm.Context.Accumulator.Xor(0);
@@ -61,11 +72,13 @@ namespace Acly.Assembler.Demos.Bootloader32
 
             Asm.EmptyLine();
             VideoMemory.PrintString(successText, 0, _successColor);
-            Asm.DisableInterruptions();
-            Asm.Halt();
+
+            Asm.Label(ProtectedModeLoopLabel);
+            Asm.Jump(ProtectedModeLoopLabel);
 
             Asm.Label(ExceptionHandlerLabel);
             Asm.Comment("Обработчик исключения");
+            Asm.DisableInterruptions();
             VideoMemory.Fill(80 * 50, _errorColor);
             Asm.Call(StringLengthLabel);
             Asm.Context.Accumulator.Set(Asm.Context.Count);
@@ -76,6 +89,23 @@ namespace Acly.Assembler.Demos.Bootloader32
             Asm.Context.Count.Add(11 * 80 + 1);
             VideoMemory.PrintString(Asm.Context.SourceIndex, Asm.Context.Count, _errorColor);
             Asm.Halt();
+
+            Asm.Label(PitHandlerLabel);
+            Asm.Comment("Обработчик прерывания PIT");
+            var mem = MemoryOperand.Create(0x9000, true);
+            Asm.Context.Accumulator.Set(mem);
+            Asm.Context.Accumulator.EqualsZero(null, false, Asm.Context.Accumulator);
+            Asm.JumpIfZero(PitHandlerZeroLabel);
+            //VideoMemory.Fill(80 * 50, _pitColor1);
+            VideoMemory.PrintString(pit1Text, 160, _pitColor1);
+            mem.Set(Prefix.Byte, false, 0);
+            Asm.Return();
+
+            Asm.Label(PitHandlerZeroLabel);
+            mem.Set(Prefix.Byte, false, 1);
+            //VideoMemory.Fill(80 * 50, _pitColor2);
+            VideoMemory.PrintString(pit2Text, 160, _pitColor2);
+            Asm.Return();
 
             Asm.Label(StringLengthLabel);
             Asm.Comment("Функция подсчёта длины строки");
@@ -137,12 +167,13 @@ namespace Acly.Assembler.Demos.Bootloader32
             ExceptionsHandler handler = new()
             {
                 ExitEntryPoint = ExceptionHandlerLabel,
+                PitHandlerPointer = PitHandlerLabel,
             };
             ExceptionsHandlerBuilder exceptionsHandlerBuilder = new()
             {
                 SegmentSelector = 0x8,
                 Type = InterruptionType.x32_64Interrupt,
-                Handler = handler
+                Handler = handler,
             };
 
             exceptionsHandlerBuilder.Build(idt);
@@ -152,7 +183,10 @@ namespace Acly.Assembler.Demos.Bootloader32
         }
 
         private const string ExceptionHandlerLabel = "cpu_exception_handler";
+        private const string PitHandlerLabel = "pit_handler";
+        private const string PitHandlerZeroLabel = "pit_handler_zero";
         private const string ProtectedModeLabel = "protected_mode";
+        private const string ProtectedModeLoopLabel = ".protected_mode_loop";
         private const string StringLengthLabel = "strlen";
         private const string StringLengthCountLabel = ".strlen_count";
         private static readonly ColorBuilder _color = new()
@@ -168,6 +202,17 @@ namespace Acly.Assembler.Demos.Bootloader32
         private static readonly ColorBuilder _errorColor = new()
         {
             Background = BiosColor.LightRed,
+            TextColor = BiosColor.White
+        };
+
+        private static readonly ColorBuilder _pitColor1 = new()
+        {
+            Background = BiosColor.Blue,
+            TextColor = BiosColor.White
+        };
+        private static readonly ColorBuilder _pitColor2 = new()
+        {
+            Background = BiosColor.LightBlue,
             TextColor = BiosColor.White
         };
     }
