@@ -31,9 +31,6 @@ namespace Acly.Assembler.Interruptions
             Asm.EmptyLine();
 
             var pit40 = MemoryOperand.Create(0x40);
-            //ProtectedMode.Accumulator.Set(Frequency);
-            //RealMode.Base.Set(intervalInHertz);
-            //RealMode.Base.Divide();
             RealMode.Accumulator.Set(Frequency / intervalInHertz);
             pit40.Output(RealMode.Accumulator.Lower);
             RealMode.Accumulator.Lower.Set(RealMode.Accumulator.Higher);

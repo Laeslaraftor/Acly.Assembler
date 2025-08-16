@@ -17,7 +17,7 @@ namespace Acly.Assembler.Interruptions
         public static bool IsReserved(this CpuInterruption interruption)
         {
             var enumType = typeof(CpuInterruption);
-            var enumMembers = typeof(CpuInterruption).GetMember(interruption.ToString());
+            var enumMembers = enumType.GetMember(interruption.ToString());
             var enumValue = enumMembers.First(member => member.DeclaringType == enumType);
 
             if (enumValue != null)

@@ -81,34 +81,48 @@ namespace Acly.Assembler
         /// mul. Умножить без знака на значение
         /// </summary>
         /// <param name="multiplier">Адрес или регистр в котором будет изменено значение</param>
-        public static void Multiply(ValueContainer multiplier)
+        /// <param name="prefix">Тип данных множителя</param>
+        public static void Multiply(Prefix? prefix, ValueContainer multiplier)
         {
-            Operation("mul", multiplier);
+            Operation("mul", prefix, multiplier);
         }
         /// <summary>
         /// imul. Умножить со знаком на значение
         /// </summary>
         /// <param name="multiplier">Адрес или регистр в котором будет изменено значение</param>
-        public static void IMultiply(ValueContainer multiplier)
+        /// <param name="prefix">Тип данных множителя</param>
+        public static void IMultiply(Prefix? prefix, ValueContainer multiplier)
         {
-            Operation("imul", multiplier);
+            Operation("imul", prefix, multiplier);
         }
 
         /// <summary>
         /// div. Разделить без знака на значение
         /// </summary>
         /// <param name="divider">Делитель</param>
-        public static void Divide(ValueContainer divider)
+        /// <param name="prefix">Тип данных делителя</param>
+        public static void Divide(Prefix? prefix, ValueContainer divider)
         {
-            Operation("div", divider);
+            Operation("div", prefix, divider);
         }
         /// <summary>
         /// idiv. Разделить со знаком на значение
         /// </summary>
         /// <param name="divider">Делитель</param>
-        public static void IDivide(ValueContainer divider)
+        /// <param name="prefix">Тип данных делителя</param>
+        public static void IDivide(Prefix? prefix, ValueContainer divider)
         {
-            Operation("idiv", divider);
+            Operation("idiv", prefix, divider);
+        }
+
+        /// <summary>
+        /// Сделать число противоположным по знаку. 
+        /// Если было отрицательное, то станет положительным и наоборот
+        /// </summary>
+        /// <param name="value">Число, которое надо инвертировать</param>
+        public static void Negative(ValueContainer value)
+        {
+            Operation("neg", value);
         }
 
         /// <summary>
@@ -555,6 +569,16 @@ namespace Acly.Assembler
         private static void Operation(string opCode, ValueContainer register)
         {
             Emit($"{opCode} {register}");
+        }
+        private static void Operation(string opCode, Prefix? prefix, ValueContainer register)
+        {
+            if (prefix == null)
+            {
+                Operation(opCode, register);
+                return;
+            }
+
+            Emit($"{opCode} {prefix.ToString().ToLower()} {register}");
         }
 
         private static string AddData(string line, Prefix? prefix, ValueContainer operand)

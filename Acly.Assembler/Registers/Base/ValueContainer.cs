@@ -104,33 +104,36 @@ namespace Acly.Assembler.Registers
         /// <summary>
         /// Умножить без знака на значение
         /// </summary>
-        public virtual void Multiply()
+        /// <param name="typeName">Тип данных</param>
+        public virtual void Multiply(Prefix? typeName)
         {
-            AsmOperators.Multiply(this);
+            AsmOperators.Multiply(typeName, this);
         }
         /// <summary>
         /// Умножить со знаком на значение
         /// </summary>
-
-        public virtual void IMultiply()
+        /// <param name="typeName">Тип данных</param>
+        public virtual void IMultiply(Prefix? typeName)
         {
-            AsmOperators.IMultiply(this);
+            AsmOperators.IMultiply(typeName, this);
         }
         /// <summary>
         /// Разделить без знака на значение. 
         /// Это действие разделит регистр <see cref="CpuModeContext.Accumulator"/> и запишет результат <see cref="CpuModeContext.Accumulator"/>, а остаток в <see cref="CpuModeContext.Data"/>
         /// </summary>
-        public virtual void Divide()
+        /// <param name="typeName">Тип данных</param>
+        public virtual void Divide(Prefix? typeName)
         {
-            AsmOperators.Divide(this);
+            AsmOperators.Divide(typeName, this);
         }
         /// <summary>
         /// Разделить со знаком на значение.
         /// Это действие разделит регистры <see cref="CpuModeContext.Accumulator"/> и <see cref="CpuModeContext.Data"/> на текущее значение
         /// </summary>
-        public virtual void IDivide()
+        /// <param name="typeName">Тип данных</param>
+        public virtual void IDivide(Prefix? typeName)
         {
-            AsmOperators.IDivide(this);
+            AsmOperators.IDivide(typeName, this);
         }
         /// <summary>
         /// Увеличить значение на 1
@@ -145,6 +148,14 @@ namespace Acly.Assembler.Registers
         public virtual void Decrement()
         {
             AsmOperators.Decrement(this);
+        }
+        /// <summary>
+        /// Сделать значение противоположным по знаку. 
+        /// Если было отрицательное, то станет положительным и наоборот
+        /// </summary>
+        public virtual void Negative()
+        {
+            AsmOperators.Negative(this);
         }
 
         /// <summary>

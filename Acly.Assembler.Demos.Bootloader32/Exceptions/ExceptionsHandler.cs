@@ -15,7 +15,7 @@ namespace Acly.Assembler.Demos.Bootloader32
 
         public MemoryOperand Handle(CpuInterruption interruption)
         {
-            Handler? generator = null;
+            Handler? generator;
             bool isReserved = interruption.IsReserved();
 
             if (isReserved && _reservedHandlerGenerator != null)

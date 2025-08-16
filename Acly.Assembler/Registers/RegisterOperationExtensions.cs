@@ -36,6 +36,39 @@
         }
 
         /// <summary>
+        /// Умножить без знака на значение
+        /// </summary>
+        /// <param name="register">Множитель</param>
+        public static void Multiply(this ValueContainer register)
+        {
+            register.Multiply(null);
+        }
+        /// <summary>
+        /// Умножить со знаком на значение
+        /// </summary>
+        /// <param name="register">Множитель</param>
+        public static void IMultiply(this ValueContainer register)
+        {
+            register.IMultiply(null);
+        }
+        /// <summary>
+        /// Разделить без знака на значение
+        /// </summary>
+        /// <param name="register">Делитель</param>
+        public static void Divide(this ValueContainer register)
+        {
+            register.Divide(null);
+        }
+        /// <summary>
+        /// Разделить со знаком на значение
+        /// </summary>
+        /// <param name="register">Делитель</param>
+        public static void IDivide(this ValueContainer register)
+        {
+            register.IDivide(null);
+        }
+
+        /// <summary>
         /// Вычислить настоящий (эффективный) адрес источника и установить его
         /// </summary>
         /// <param name="register">Регистр, который необходимо изменить</param>

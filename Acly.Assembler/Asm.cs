@@ -97,9 +97,19 @@ namespace Acly.Assembler
         /// Начать функцию
         /// </summary>
         /// <param name="name">Название функции</param>
-        public static void Label(string name)
+        public static void Label(string name) => Label(name, true);
+        /// <summary>
+        /// Начать функцию
+        /// </summary>
+        /// <param name="name">Название функции</param>
+        /// <param name="emptyLine">Если true то перед объявлением функции будет добавлена пустая строка</param>
+        public static void Label(string name, bool emptyLine)
         {
-            Emit();
+            if (emptyLine)
+            {
+                Emit();
+            }
+
             Emit($"{name}:", false);
         }
         /// <summary>
@@ -232,6 +242,15 @@ namespace Acly.Assembler
         }
 
         /// <summary>
+        /// Повторять функцию
+        /// </summary>
+        /// <param name="functionAddress">Адрес функции, которую надо повторять</param>
+        public static void Loop(MemoryOperand functionAddress)
+        {
+            Emit($"loop {functionAddress}", true);
+        }
+
+        /// <summary>
         /// int. Совершить прерывание. Некоторые полезные прерывания можно найти в <see cref="Ints"/>.
         /// </summary>
         /// <param name="interruption">Прерывание, которое необходимо совершить</param>
@@ -319,29 +338,12 @@ namespace Acly.Assembler
         #region Логика
 
         /// <summary>
-        /// je. Перейти к функции если значения равны\равно нулю
-        /// </summary>
-        /// <param name="label">Функция к которой надо перейти</param>
-        public static void JumpIfEquals(string label)
-        {
-            Emit($"je {label}");
-        }
-        /// <summary>
         /// je. Перейти к функции по адресу если значения равны\равно нулю
         /// </summary>
         /// <param name="functionAddress">Адрес функции</param>
         public static void JumpIfEquals(MemoryOperand functionAddress)
         {
             Emit($"je {functionAddress}");
-        }
-
-        /// <summary>
-        /// jz. Перейти к функции если значения равны\равно нулю
-        /// </summary>
-        /// <param name="label">Функция к которой надо перейти</param>
-        public static void JumpIfZero(string label)
-        {
-            Emit($"jz {label}");
         }
         /// <summary>
         /// jz. Перейти к функции по адресу если значения равны\равно нулю
@@ -351,15 +353,6 @@ namespace Acly.Assembler
         {
             Emit($"jz {functionAddress}");
         }
-
-        /// <summary>
-        /// jne. Перейти к функции если значения не равны\не равны нулю
-        /// </summary>
-        /// <param name="label">Функция к которой надо перейти</param>
-        public static void JumpIfNotEquals(string label)
-        {
-            Emit($"jne {label}");
-        }
         /// <summary>
         /// jne. Перейти к функции по адресу если значения не равны\равно нулю
         /// </summary>
@@ -367,15 +360,6 @@ namespace Acly.Assembler
         public static void JumpIfNotEquals(MemoryOperand functionAddress)
         {
             Emit($"jne {functionAddress}");
-        }
-
-        /// <summary>
-        /// jnz. Перейти к функции если значения не равны\не равны нулю
-        /// </summary>
-        /// <param name="label">Функция к которой надо перейти</param>
-        public static void JumpIfNotZero(string label)
-        {
-            Emit($"jnz {label}");
         }
         /// <summary>
         /// jnz. Перейти к функции по адресу если значения не равны\равно нулю
@@ -385,15 +369,6 @@ namespace Acly.Assembler
         {
             Emit($"jnz {functionAddress}");
         }
-
-        /// <summary>
-        /// jg. Перейти к функции если значение больше (знаковое)
-        /// </summary>
-        /// <param name="label">Функция к которой надо перейти</param>
-        public static void JumpIfGreater(string label)
-        {
-            Emit($"jg {label}");
-        }
         /// <summary>
         /// jg. Перейти к функции по адресу если значение больше (знаковое)
         /// </summary>
@@ -401,15 +376,6 @@ namespace Acly.Assembler
         public static void JumpIfGreater(MemoryOperand functionAddress)
         {
             Emit($"jg {functionAddress}");
-        }
-
-        /// <summary>
-        /// jl. Перейти к функции если значение меньше (знаковое)
-        /// </summary>
-        /// <param name="label">Функция к которой надо перейти</param>
-        public static void JumpIfLess(string label)
-        {
-            Emit($"jl {label}");
         }
         /// <summary>
         /// jl. Перейти к функции по адресу если значение меньше (знаковое)
@@ -419,15 +385,6 @@ namespace Acly.Assembler
         {
             Emit($"jl {functionAddress}");
         }
-
-        /// <summary>
-        /// ja. Перейти к функции если значение больше (беззнаковое)
-        /// </summary>
-        /// <param name="label">Функция к которой надо перейти</param>
-        public static void JumpIfAbove(string label)
-        {
-            Emit($"ja {label}");
-        }
         /// <summary>
         /// ja. Перейти к функции по адресу если значение больше (беззнаковое)
         /// </summary>
@@ -435,15 +392,6 @@ namespace Acly.Assembler
         public static void JumpIfAbove(MemoryOperand functionAddress)
         {
             Emit($"ja {functionAddress}");
-        }
-
-        /// <summary>
-        /// jb. Перейти к функции если значение меньше (беззнаковое)
-        /// </summary>
-        /// <param name="label">Функция к которой надо перейти</param>
-        public static void JumpIfBelow(string label)
-        {
-            Emit($"jb {label}");
         }
         /// <summary>
         /// jb. Перейти к функции по адресу если значение меньше (беззнаковое)
@@ -453,7 +401,14 @@ namespace Acly.Assembler
         {
             Emit($"jb {functionAddress}");
         }
-
+        /// <summary>
+        /// jbe. Перейти к функции по адресу если значение меньше или равно (беззнаковое)
+        /// </summary>
+        /// <param name="functionAddress">Адрес функции</param>
+        public static void JumpIfBelowOrEquals(MemoryOperand functionAddress)
+        {
+            Emit($"jbe {functionAddress}");
+        }
         /// <summary>
         /// jc. Перейти, если флаг переноса (CF) равен 1
         /// </summary>
@@ -470,15 +425,6 @@ namespace Acly.Assembler
         {
             Emit($"jc {functionAddress}");
         }
-
-        /// <summary>
-        /// jnc. Перейти, если флаг переноса (CF) равен 0
-        /// </summary>
-        /// <param name="label">Функция к которой надо перейти</param>
-        public static void JumpIfNotCarry(string label)
-        {
-            Emit($"jnc {label}");
-        }
         /// <summary>
         /// jnc. Перейти, если флаг переноса (CF) равен 0
         /// </summary>
@@ -486,15 +432,6 @@ namespace Acly.Assembler
         public static void JumpIfNotCarry(MemoryOperand functionAddress)
         {
             Emit($"jnc {functionAddress}");
-        }
-
-        /// <summary>
-        /// jo. Перейти, если флаг переполнения (OF) равен 1
-        /// </summary>
-        /// <param name="label">Функция к которой надо перейти</param>
-        public static void JumpIfOverflow(string label)
-        {
-            Emit($"jo {label}");
         }
         /// <summary>
         /// jo. Перейти, если флаг переполнения (OF) равен 1
@@ -504,15 +441,6 @@ namespace Acly.Assembler
         {
             Emit($"jo {functionAddress}");
         }
-
-        /// <summary>
-        /// jno. Перейти, если флаг переполнения (OF) равен 0
-        /// </summary>
-        /// <param name="label">Функция к которой надо перейти</param>
-        public static void JumpIfNotOverflow(string label)
-        {
-            Emit($"jno {label}");
-        }
         /// <summary>
         /// jno. Перейти, если флаг переполнения (OF) равен 0
         /// </summary>
@@ -521,7 +449,6 @@ namespace Acly.Assembler
         {
             Emit($"jno {functionAddress}");
         }
-
         /// <summary>
         /// js. Перейти, если флаг знака (SF) равен 1
         /// </summary>
@@ -538,7 +465,6 @@ namespace Acly.Assembler
         {
             Emit($"js {functionAddress}");
         }
-
         /// <summary>
         /// jns. Перейти, если флаг знака (SF) равен 0
         /// </summary>
@@ -892,12 +818,19 @@ namespace Acly.Assembler
         /// Если true, то код будет добавлен в только в моменте получения исходного кода.
         /// Может пригодится когда надо добавить код независимо от текущей позиции
         /// </param>
-        public static void Add(ICodeGenerator codeGenerator, bool delayed)
+        /// <returns>Был ли добавлен генератор кода</returns>
+        public static bool Add(ICodeGenerator codeGenerator, bool delayed)
         {
             if (delayed)
             {
+                if (_delayedCodeGenerators.Contains(codeGenerator))
+                {
+                    return false;
+                }
+
                 _delayedCodeGenerators.Add(codeGenerator);
-                return;
+
+                return true;
             }
 
             var startSection = CurrentSection;
@@ -905,7 +838,7 @@ namespace Acly.Assembler
 
             if (code.Code == string.Empty)
             {
-                return;
+                return false;
             }
 
             Section(code.Section);
@@ -921,6 +854,8 @@ namespace Acly.Assembler
             {
                 Section(startSection.Value);
             }
+
+            return true;
         }
 
         /// <summary>
@@ -993,6 +928,10 @@ namespace Acly.Assembler
             if (bssVariables != null)
             {
                 AppendSection(result, Assembler.Section.Bss, bssVariables);
+            }
+            if (_bssBuilder.Length > 0)
+            {
+                AppendSection(result, Assembler.Section.Bss, _bssBuilder.ToString());
             }
 
             result.AppendLine();

@@ -31,4 +31,4 @@ await Execute($"nasm -f bin \"{kernelFile}\" -o output/kernelRaw.bin");
 await Execute("ddrelease64 if=/dev/zero of=output/hdd.img count=32768");
 await Execute("ddrelease64 if=output/boot.bin of=output/hdd.img bs=512 conv=notrunc");
 await Execute("ddrelease64 if=output/kernelRaw.bin of=output/hdd.img seek=1 conv=notrunc");
-await Execute("qemu-system-x86_64 -drive format=raw,file=output/hdd.img -d int -no-reboot");
+await Execute("qemu-system-x86_64 -drive format=raw,file=output/hdd.img -d int -no-reboot -vga vmware");
