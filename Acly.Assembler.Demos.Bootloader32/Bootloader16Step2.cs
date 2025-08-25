@@ -62,24 +62,18 @@ namespace Acly.Assembler.Demos.Bootloader32
             var vbeErrorText = Asm.CreateStringVariable("vbe_error_message", "Cannot get VBE info");
             var pit1Text = Asm.CreateStringVariable("pit1_message", "PIT 1");
             var pit2Text = Asm.CreateStringVariable("pit2_message", "PIT 2");
-            var textBuffer = Asm.CreateArrayVariable("text_buffer", Size.x16);
-            textBuffer.Length = 7;
 
             Ints.BIOS.Video.ClearScreen(_color);
             Ints.BIOS.Video.SetCursorPosition(0, 0, 0);
             Ints.BIOS.Video.PrintString(collectionVbeInfoText);
 
             var vbeInfo = VBE.GetInfo(VbeExceptionHandlerLabel);
-            var modeInfo = VBE.EnableBestGraphicMode(vbeInfo);
-
-            Numbers.NumberToString(vbeInfo.VideoModePointer, textBuffer);
-
-            Ints.BIOS.Video.SetCursorPosition(0, 1, 0);
-            Ints.BIOS.Video.PrintString(textBuffer);
-            Asm.Halt();
 
             Ints.CPU.PIT.Initialize(50);
             Ints.CPU.PIT.Remap();
+
+            Ints.BIOS.Video.SetCursorPosition(0, 1, 0);
+            Ints.BIOS.Video.PrintString(settingUpPicText);
 
             Asm.EmptyLine();
             Ints.BIOS.Video.SetCursorPosition(0, 2, 0);
